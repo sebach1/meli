@@ -17,7 +17,7 @@ var (
 
 	errNilProduct = errors.New("the given PRODUCT is NIL")
 
-	errRemoteInconsistency = errors.New("the SERVER had an inconsistency while performing a request (status code != real behavior)")
+	errRemoteInconsistency = errors.New("the SERVER had an inconsistency while performing a request (status code != real behaviour)")
 )
 
 type Error struct {

@@ -20,7 +20,7 @@ func TestMeLi_Classify(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "correct behavior",
+			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{title: "quux"},
 			stub: &stub{status: 200,
@@ -74,21 +74,21 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 		wantErr  error
 	}{
 		{
-			name:    "correct behavior",
+			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{titles: []string{"a", "b"}},
 			stub: &stub{status: 200,
 				body: []*CategoryPrediction{
-					&CategoryPrediction{Id: "foo", PredictionProbability: 1, Name: "bar"},
-					&CategoryPrediction{Id: "baz", PredictionProbability: 1, Name: "quux"},
+					{Id: "foo", PredictionProbability: 1, Name: "bar"},
+					{Id: "baz", PredictionProbability: 1, Name: "quux"},
 				},
 				wantBodyReceive: JSONMarshal(t,
-					[]map[string]string{map[string]string{"title": "a"}, map[string]string{"title": "b"}},
+					[]map[string]string{{"title": "a"}, {"title": "b"}},
 				),
 			},
 			wantCats: []*CategoryPrediction{
-				&CategoryPrediction{Id: "foo", PredictionProbability: 1, Name: "bar"},
-				&CategoryPrediction{Id: "baz", PredictionProbability: 1, Name: "quux"},
+				{Id: "foo", PredictionProbability: 1, Name: "bar"},
+				{Id: "baz", PredictionProbability: 1, Name: "quux"},
 			},
 		},
 		{
