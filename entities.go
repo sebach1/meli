@@ -111,10 +111,10 @@ type SellerAddress struct {
 		Name string `json:"name"`
 	} `json:"country"`
 	SearchLocation struct {
-		Neighborhood struct {
+		Neighbourhood struct {
 			Id   string `json:"id"`
 			Name string `json:"name"`
-		} `json:"neighborhood"`
+		} `json:"neighborhood"` // :@
 		City struct {
 			Id   string `json:"id"`
 			Name string `json:"name"`
