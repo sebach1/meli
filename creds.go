@@ -2,13 +2,14 @@ package meli
 
 type token string
 
+type applicationId string
 type refreshToken token
 type accessToken token
 
 type creds struct {
 	Access        accessToken
 	Refresh       refreshToken
-	ApplicationId string
+	ApplicationId applicationId
 	Secret        token
 }
 
