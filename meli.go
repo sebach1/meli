@@ -20,14 +20,15 @@ func (ml *MeLi) RouteTo(path string, id string, params url.Values) (string, erro
 		base += "/oauth/token"
 	case "product":
 		base += "/items"
+		if id != "" {
+			base = base + "/" + id
+		}
 	case "category_predict":
-		base += "/sites/MLA/category_predictor/predict"
+		base += fmt.Sprintf("/sites/%s/category_predictor/predict", id)
 	default:
 		return "", errNonexistantPath
 	}
-	if id != "" {
-		base += fmt.Sprintf("/%s", id)
-	}
+
 	if query := params.Encode(); query != "" {
 		base = base + "?" + query
 	}
