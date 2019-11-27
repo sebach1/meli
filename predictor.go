@@ -38,7 +38,7 @@ type Category struct {
 func (ml *MeLi) Classify(title string) (*CategoryPrediction, error) {
 	params := url.Values{}
 	params.Set("title", title)
-	URL, err := ml.RouteTo("category_predict", "MLA", params)
+	URL, err := ml.RouteTo("category_predict", params, "MLA")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (ml *MeLi) Classify(title string) (*CategoryPrediction, error) {
 }
 
 func (ml *MeLi) ClassifyBatch(titles []string) ([]*CategoryPrediction, error) {
-	URL, err := ml.RouteTo("category_predict", "", nil)
+	URL, err := ml.RouteTo("category_predict", nil, "MLA")
 	if err != nil {
 		return nil, err
 	}
