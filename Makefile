@@ -14,7 +14,8 @@ staticcheck:
 	$(GO) get honnef.co/go/tools/cmd/staticcheck
 	staticcheck $(PKGS)
 
-# misspell: # commented due api misspell errs on sv side
+# commented due api misspell errs on sv side
+# misspell:
 # 	$(GO) get github.com/client9/misspell/cmd/misspell
 # 	misspell \
 # 		-locale GB \

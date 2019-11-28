@@ -42,9 +42,9 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		{
 			name:    "REMOTE returns an ERR",
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
-			wantErr: meliErrFooBar,
+			wantErr: svErrFooBar,
 			stub: &stub{status: 404,
-				body: meliErrFooBar,
+				body: svErrFooBar,
 				wantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
 					"refresh_token": []string{"asd"},
@@ -58,7 +58,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: errRemoteInconsistency,
 			stub: &stub{status: 200,
-				body: meliErrFooBar,
+				body: svErrFooBar,
 				wantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
 					"refresh_token": []string{"asd"},

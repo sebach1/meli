@@ -6,39 +6,27 @@ import (
 	"net/url"
 )
 
-type CategoryPrediction struct {
-	Id                    string
-	Name                  string
-	PredictionProbability float64
-	ShippingModes         []string `json:"shipping_modes"`
-	PathFromRoot          []*CategoryPrediction
-	Variations            []*Variation
-}
-
 type Variation struct {
-	AttributeGroupID   string `json:"attribute_group_id"`
-	AttributeGroupName string `json:"attribute_group_name"`
-	Hierarchy          string `json:"hierarchy"`
-	ID                 string `json:"id"`
-	Name               string `json:"name"`
-	Relevance          int    `json:"relevance"`
-	Tags               struct {
-		AllowVariations bool `json:"allow_variations"`
-		DefinesPicture  bool `json:"defines_picture"`
-	} `json:"tags"`
-	ValueMaxLength int    `json:"value_max_length"`
-	ValueType      string `json:"value_type"`
-	Values         []*Value
-}
-type Category struct {
-	Id   string
-	Name string
+	AttributeGroupID   string   `json:"attribute_group_id,omitempty"`
+	AttributeGroupName string   `json:"attribute_group_name,omitempty"`
+	Hierarchy          string   `json:"hierarchy,omitempty"`
+	ID                 string   `json:"id,omitempty"`
+	Name               string   `json:"name,omitempty"`
+	Relevance          int      `json:"relevance,omitempty"`
+	Tag                []Tag    `json:"tag,omitempty"`
+	ValueMaxLength     int      `json:"value_max_length,omitempty"`
+	ValueType          string   `json:"value_type,omitempty"`
+	Values             []*Value `json:"values,omitempty"`
 }
 
-func (ml *MeLi) Classify(title string) (*CategoryPrediction, error) {
+type SiteId string
+
+func (sId SiteId) String() string { return string(sId) }
+
+func (ml *MeLi) Classify(title string) (*Category, error) {
 	params := url.Values{}
 	params.Set("title", title)
-	URL, err := ml.RouteTo("category_predict", "MLA", params)
+	URL, err := ml.RouteTo("category_predict", params, SiteId("MLA"))
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +39,7 @@ func (ml *MeLi) Classify(title string) (*CategoryPrediction, error) {
 	if resp.StatusCode >= 400 {
 		return nil, errFromReader(resp.Body)
 	}
-	cat := &CategoryPrediction{}
+	cat := &Category{}
 	err = json.NewDecoder(resp.Body).Decode(cat)
 	if err != nil {
 		return nil, err
@@ -59,8 +47,8 @@ func (ml *MeLi) Classify(title string) (*CategoryPrediction, error) {
 	return cat, nil
 }
 
-func (ml *MeLi) ClassifyBatch(titles []string) ([]*CategoryPrediction, error) {
-	URL, err := ml.RouteTo("category_predict", "", nil)
+func (ml *MeLi) ClassifyBatch(titles []string) ([]*Category, error) {
+	URL, err := ml.RouteTo("category_predict", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +69,7 @@ func (ml *MeLi) ClassifyBatch(titles []string) ([]*CategoryPrediction, error) {
 	if resp.StatusCode >= 400 {
 		return nil, errFromReader(resp.Body)
 	}
-	cats := []*CategoryPrediction{}
+	cats := []*Category{}
 	err = json.NewDecoder(resp.Body).Decode(&cats)
 	if err != nil {
 		return nil, err

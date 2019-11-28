@@ -16,7 +16,7 @@ func TestMeLi_Classify(t *testing.T) {
 		name    string
 		args    args
 		stub    *stub
-		wantCat *CategoryPrediction
+		wantCat *Category
 		wantErr error
 	}{
 		{
@@ -24,19 +24,19 @@ func TestMeLi_Classify(t *testing.T) {
 			wantErr: nil,
 			args:    args{title: "quux"},
 			stub: &stub{status: 200,
-				body: &CategoryPrediction{Id: "foo", PredictionProbability: 1, Name: "bar"},
+				body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
 				wantParamsReceive: url.Values{
 					"title": []string{"quux"},
 				},
 			},
-			wantCat: &CategoryPrediction{Id: "foo", PredictionProbability: 1, Name: "bar"},
+			wantCat: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
 		},
 		{
 			name:    "REMOTE returns an ERR",
-			wantErr: meliErrFooBar,
+			wantErr: svErrFooBar,
 			args:    args{title: "quux"},
 			stub: &stub{status: 400,
-				body: meliErrFooBar,
+				body: svErrFooBar,
 				wantParamsReceive: url.Values{
 					"title": []string{"quux"},
 				},
@@ -70,7 +70,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 		name     string
 		args     args
 		stub     *stub
-		wantCats []*CategoryPrediction
+		wantCats []*Category
 		wantErr  error
 	}{
 		{
@@ -78,7 +78,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			wantErr: nil,
 			args:    args{titles: []string{"a", "b"}},
 			stub: &stub{status: 200,
-				body: []*CategoryPrediction{
+				body: []*Category{
 					{Id: "foo", PredictionProbability: 1, Name: "bar"},
 					{Id: "baz", PredictionProbability: 1, Name: "quux"},
 				},
@@ -86,17 +86,17 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 					[]map[string]string{{"title": "a"}, {"title": "b"}},
 				),
 			},
-			wantCats: []*CategoryPrediction{
+			wantCats: []*Category{
 				{Id: "foo", PredictionProbability: 1, Name: "bar"},
 				{Id: "baz", PredictionProbability: 1, Name: "quux"},
 			},
 		},
 		{
 			name:    "sends no body",
-			wantErr: meliErrFooBar,
+			wantErr: svErrFooBar,
 			args:    args{titles: []string{}},
 			stub: &stub{status: 400,
-				body:            meliErrFooBar,
+				body:            svErrFooBar,
 				wantBodyReceive: JSONMarshal(t, []string{}),
 			},
 			wantCats: nil,

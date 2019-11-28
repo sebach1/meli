@@ -20,7 +20,7 @@ var (
 	errFoo = errors.New("foo")
 	errBar = errors.New("bar")
 
-	meliErrFooBar = &Error{ResponseErr: errFoo.Error(), Message: errBar.Error()}
+	svErrFooBar = &Error{ResponseErr: errFoo.Error(), Message: errBar.Error()}
 )
 
 type stub struct {
