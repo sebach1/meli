@@ -257,5 +257,10 @@ func (prod *Product) copy(t *testing.T) *Product {
 	if err != nil {
 		t.Fatalf("Couldnt be able to copy struct: %v", err)
 	}
+	newProd.Variants = nil
+	for _, v := range prod.Variants {
+		newV := v.copy(t)
+		newProd.Variants = append(newProd.Variants, newV)
+	}
 	return newProd
 }
