@@ -31,10 +31,10 @@ func TestMeLi_GetProduct(t *testing.T) {
 		{
 			name:     "REMOTE returns the CORRECTly product",
 			wantErr:  nil,
-			wantProd: &Product{Id: "foo", Title: "bar"},
+			wantProd: gProducts.Bar.None,
 			args:     args{id: "foo"},
 			stub: &melitest.Stub{Status: 200,
-				Body: &Product{Id: "foo", Title: "bar"},
+				Body: gProducts.Bar.None,
 			},
 		},
 	}
@@ -73,47 +73,47 @@ func TestMeLi_SetProduct(t *testing.T) {
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
-			prod:    &Product{Id: "foo", Title: "bar"},
+			prod:    gProducts.Foo.None,
 			creds:   creds{},
 		},
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
-			prod:    &Product{Id: "foo", Title: "bar"},
+			prod:    gProducts.Foo.None.copy(t),
 			creds:   creds{},
 		},
 		{
 			name:     "while EDITing product REMOTE returns CORRECTly",
-			prod:     &Product{Id: "foo", Title: "bar"},
-			wantProd: &Product{Id: "foo", Title: "bar", Price: 0},
+			prod:     gProducts.Foo.None.copy(t),
+			wantProd: gProducts.Foo.Title.Alt.copy(t),
 			stub: &melitest.Stub{Status: 200,
-				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}), // The body sent lacks of id since its in the route
+				WantBodyReceive: JSONMarshal(t, gProducts.Foo.Id.Zero), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				Body: &Product{Id: "foo", Title: "bar", Price: 0},
+				Body: gProducts.Foo.Title.Alt,
 			},
 			creds: creds{Access: "baz"},
 		},
 		{
 			name:     "while CREATing product, REMOTE returns CORRECTly",
-			prod:     &Product{Title: "bar"},
-			wantProd: &Product{Id: "quux", Title: "bar"},
+			prod:     gProducts.Bar.Id.Zero.copy(t),
+			wantProd: gProducts.Bar.None.copy(t),
 			stub: &melitest.Stub{Status: 200,
-				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				Body: &Product{Id: "quux", Title: "bar"},
+				Body: gProducts.Bar.None,
 			},
 			creds: creds{Access: "baz"},
 		},
 		{
-			name:    "while CREATing product, REMOTE returns CORRECTly",
-			prod:    &Product{Title: "bar"},
+			name:    "while CREATing product, REMOTE returns ERRored",
+			prod:    gProducts.Bar.Id.Zero.copy(t),
 			wantErr: svErrFooBar,
 			stub: &melitest.Stub{Status: 400,
-				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
@@ -123,10 +123,10 @@ func TestMeLi_SetProduct(t *testing.T) {
 		},
 		{
 			name:    "while EDITing product, REMOTE returns an ERROR",
-			prod:    &Product{Id: "foo", Title: "bar"},
+			prod:    gProducts.Bar.None.copy(t),
 			wantErr: svErrFooBar,
 			stub: &melitest.Stub{Status: 400,
-				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
@@ -163,24 +163,24 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
-			prod:    &Product{Id: "foo", Title: "bar"},
+			prod:    gProducts.Foo.None,
 			creds:   creds{},
 		},
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
-			prod: &Product{Id: "foo"},
+			prod: gProducts.Foo.None,
 			stub: &melitest.Stub{Status: 200,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				Body: &Product{Id: "foo", Title: "bar", Price: 0, Deleted: true},
+				Body: gProducts.Foo.None,
 			},
 			creds: creds{Access: "baz"},
 		},
 		{
 			name:    "while EDITing product, REMOTE returns an ERROR",
-			prod:    &Product{Id: "foo"},
+			prod:    gProducts.Foo.None,
 			wantErr: svErrFooBar,
 			stub: &melitest.Stub{Status: 400,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
@@ -214,65 +214,6 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 	}
 }
 
-func TestProduct_RemoveCombination(t *testing.T) {
-	type args struct {
-		attName string
-	}
-	tests := []struct {
-		name    string
-		prod    *Product
-		newProd *Product
-		args    args
-	}{
-		{
-			name: "combination is already set up in vars",
-			prod: &Product{
-				Variants: []*Variant{
-					{AttributeCombinations: []*AttributeCombination{
-						{Name: "foo", ValueId: "bar", ValueName: "baz"},
-						{Name: "quux", ValueId: "quz", ValueName: "quuz"},
-					}},
-				},
-			},
-			newProd: &Product{
-				Variants: []*Variant{
-					{AttributeCombinations: []*AttributeCombination{
-						{Name: "foo", ValueId: "", ValueName: ""},
-						{Name: "quux", ValueId: "quz", ValueName: "quuz"},
-					}},
-				},
-			},
-			args: args{attName: "foo"},
-		},
-		{
-			name: "combination is not set up in vars",
-			prod: &Product{
-				Variants: []*Variant{
-					{AttributeCombinations: []*AttributeCombination{
-						{Name: "quux", ValueId: "quz", ValueName: "quuz"},
-					}},
-				},
-			},
-			newProd: &Product{
-				Variants: []*Variant{
-					{AttributeCombinations: []*AttributeCombination{
-						{Name: "quux", ValueId: "quz", ValueName: "quuz"},
-					}},
-				},
-			},
-			args: args{attName: "foo"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.prod.RemoveCombination(tt.args.attName)
-			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
-				t.Errorf("Product.RemoveCombination() mismatch (-want +got): %s", diff)
-			}
-		})
-	}
-}
-
 func TestProduct_ManageVarStocks(t *testing.T) {
 	type args struct {
 		stockById map[VariantId]int
@@ -284,7 +225,7 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 		args    args
 	}{
 		{
-			name: "vars exists",
+			name: "vars EXISTS",
 			prod: &Product{
 				Variants: []*Variant{
 					{Id: 1, AvailableQuantity: 2},
@@ -300,21 +241,7 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 			args: args{stockById: map[VariantId]int{1: -1, 5: 2}},
 		},
 		{
-			name: "vars does notexists",
-			prod: &Product{
-				Variants: []*Variant{
-					{Id: 5, AvailableQuantity: 10},
-				},
-			},
-			newProd: &Product{
-				Variants: []*Variant{
-					{Id: 5, AvailableQuantity: 12},
-				},
-			},
-			args: args{stockById: map[VariantId]int{1: -1, 5: 2}},
-		},
-		{
-			name: "vars does not exists",
+			name: "vars does NOT EXISTS",
 			prod: &Product{
 				Variants: []*Variant{
 					{Id: 5, AvailableQuantity: 10},
@@ -333,6 +260,41 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 			tt.prod.ManageVarStocks(tt.args.stockById)
 			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
 				t.Errorf("Product.ManageVarStocks() mismatch (-want +got): %s", diff)
+			}
+		})
+	}
+}
+
+func TestProduct_RemoveCombination(t *testing.T) {
+	type args struct {
+		attName string
+	}
+	tests := []struct {
+		name     string
+		prod     *Product
+		newCombs []*AttributeCombination
+		args     args
+	}{
+		{
+			name:     "combination is REMOVED SUCCESSFULLY",
+			prod:     gProducts.Foo.None.copy(t),
+			newCombs: rmValueAndReturn(gVariants.Foo.None.copy(t).AttributeCombinations),
+			args:     args{attName: gVariants.Foo.None.AttributeCombinations[0].Name},
+		},
+		{
+			name:     "combination is NOT IN VARS",
+			prod:     gProducts.Foo.None.copy(t),
+			newCombs: gVariants.Foo.None.AttributeCombinations,
+			args:     args{attName: gVariants.Bar.None.AttributeCombinations[0].Name},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.prod.RemoveCombination(tt.args.attName)
+			for _, v := range tt.prod.Variants {
+				if diff := cmp.Diff(tt.newCombs, v.AttributeCombinations); diff != "" {
+					t.Errorf("Product.RemoveCombination() mismatch (-want +got): %s", diff)
+				}
 			}
 		})
 	}
@@ -385,13 +347,13 @@ func TestProduct_AddVariant(t *testing.T) {
 		{
 			name:    "given var is SUCCESSFULLY ADDED",
 			prod:    gProducts.Foo.None.copy(t),
-			newProd: gProducts.Foo.None.copy(t).addVariantUnsafe(gVariants.Bar.None),
+			newProd: gProducts.Foo.None.copy(t).appendVariantAndReturn(gVariants.Bar.None),
 			v:       gVariants.Bar.None.copy(t),
 		},
 		{
 			name:    "given var is SUCCESSFULLY ADDED on EMPTY PROD",
 			prod:    gProducts.Foo.Variants.Zero.copy(t),
-			newProd: gProducts.Foo.Variants.Zero.copy(t).addVariantUnsafe(gVariants.Bar.None),
+			newProd: gProducts.Foo.Variants.Zero.copy(t).appendVariantAndReturn(gVariants.Bar.None),
 			v:       gVariants.Bar.None.copy(t),
 		},
 	}
@@ -415,7 +377,27 @@ func TestProduct_AddVariant(t *testing.T) {
 	}
 }
 
-func (p *Product) addVariantUnsafe(v *Variant) *Product {
+func (p *Product) appendVariantAndReturn(v *Variant) *Product {
 	p.Variants = append(p.Variants, v)
 	return p
+}
+
+// func (p *Product) modVariantAndReturn(v *Variant, mod func(v *Variant)) *Product {
+// 	for _, v := range p.Variants {
+// 		mod(v)
+// 	}
+// 	return p
+// }
+
+func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
+	for _, attC := range combs {
+		attC.ValueId = ""
+		attC.ValueName = ""
+	}
+	return combs
+}
+
+func (prod *Product) modAndReturn(mod func(*Product)) *Product {
+	mod(prod)
+	return prod
 }
