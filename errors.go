@@ -15,10 +15,10 @@ var (
 	errNilRefreshToken  = errors.New("the REFRESH TOKEN is NIL")
 	errNilSecret        = errors.New("the SECRET is NIL")
 
-	errNilProductId    = errors.New("the given PRODUCT ID is NIL")
-	errNilProduct      = errors.New("the given PRODUCT is NIL")
-	errNilVariant      = errors.New("the given VARIANT is NIL")
-	errNilCategory     = errors.New("the given CATEGORY is NIL")
+	errNilProductId = errors.New("the given PRODUCT ID is NIL")
+	errNilProduct   = errors.New("the given PRODUCT is NIL")
+	errNilVariant   = errors.New("the given VARIANT is NIL")
+	// errNilCategory     = errors.New("the given CATEGORY is NIL")
 	errNilCategoryId   = errors.New("the given CATEGORY ID is NIL")
 	errNilCombinations = errors.New("the given ATTR COMBINATIONS are NIL")
 

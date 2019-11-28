@@ -163,12 +163,12 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
-			prod:    gProducts.Foo.None,
+			prod:    gProducts.Foo.None.copy(t),
 			creds:   creds{},
 		},
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
-			prod: gProducts.Foo.None,
+			prod: gProducts.Foo.None.copy(t),
 			stub: &melitest.Stub{Status: 200,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
@@ -180,7 +180,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		},
 		{
 			name:    "while EDITing product, REMOTE returns an ERROR",
-			prod:    gProducts.Foo.None,
+			prod:    gProducts.Foo.None.copy(t),
 			wantErr: svErrFooBar,
 			stub: &melitest.Stub{Status: 400,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
@@ -382,13 +382,6 @@ func (p *Product) appendVariantAndReturn(v *Variant) *Product {
 	return p
 }
 
-// func (p *Product) modVariantAndReturn(v *Variant, mod func(v *Variant)) *Product {
-// 	for _, v := range p.Variants {
-// 		mod(v)
-// 	}
-// 	return p
-// }
-
 func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
 	for _, attC := range combs {
 		attC.ValueId = ""
@@ -427,7 +420,40 @@ func TestProduct_ManageStock(t *testing.T) {
 			p := &Product{AvailableQuantity: tt.stockHave}
 			p.ManageStock(tt.stockArg)
 			if diff := cmp.Diff(tt.stockWant, p.AvailableQuantity); diff != "" {
-				t.Errorf("Product.AddVariant() mismatch (-want +got): %s", diff)
+				t.Errorf("Product.ManageStock() mismatch (-want +got): %s", diff)
+			}
+		})
+	}
+}
+
+func TestProduct_RemoveVariant(t *testing.T) {
+	type args struct {
+		varId VariantId
+	}
+	tests := []struct {
+		name    string
+		prod    *Product
+		args    args
+		newProd *Product
+	}{
+		{
+			name:    "prod without vars",
+			prod:    gProducts.Zero.copy(t),
+			args:    args{varId: gVariants.Bar.None.copy(t).Id},
+			newProd: gProducts.Zero,
+		},
+		{
+			name:    "deletes successfully the var",
+			prod:    gProducts.Foo.None.copy(t),
+			args:    args{varId: gVariants.Foo.None.copy(t).Id},
+			newProd: gProducts.Foo.Variants.Zero,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.prod.RemoveVariant(tt.args.varId)
+			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
+				t.Errorf("Product.RemoveVariant() mismatch (-want +got): %s", diff)
 			}
 		})
 	}
