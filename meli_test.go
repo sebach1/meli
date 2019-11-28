@@ -1,7 +1,6 @@
 package meli
 
 import (
-	"fmt"
 	"net/url"
 	"testing"
 )
@@ -9,7 +8,7 @@ import (
 func TestMeLi_RouteTo(t *testing.T) {
 	type args struct {
 		path   string
-		id     fmt.Stringer
+		ids    []interface{}
 		params url.Values
 	}
 	tests := []struct {
@@ -21,11 +20,11 @@ func TestMeLi_RouteTo(t *testing.T) {
 		{
 			name: "all products",
 			args: args{path: "product"},
-			want: "https://api.mercadolibre.com/items",
+			want: "https://api.mercadolibre.com/items/",
 		},
 		{
 			name: "single product",
-			args: args{path: "product", id: ProductId("foo")},
+			args: args{path: "product", ids: []interface{}{"foo"}},
 			want: "https://api.mercadolibre.com/items/foo",
 		},
 		{
@@ -35,23 +34,23 @@ func TestMeLi_RouteTo(t *testing.T) {
 		},
 		{
 			name: "category predict",
-			args: args{path: "category_predict", id: SiteId("MLA")},
+			args: args{path: "category_predict", ids: []interface{}{"MLA"}},
 			want: "https://api.mercadolibre.com/sites/MLA/category_predictor/predict",
 		},
 		{
 			name: "category predict with params",
-			args: args{path: "category_predict", id: SiteId("MLA"), params: url.Values{"foo": []string{"bar"}}},
+			args: args{path: "category_predict", ids: []interface{}{"MLA"}, params: url.Values{"foo": []string{"bar"}}},
 			want: "https://api.mercadolibre.com/sites/MLA/category_predictor/predict?foo=bar",
 		},
 		{
 			name: "single product with params",
-			args: args{path: "product", id: ProductId("foo"), params: url.Values{"bar": []string{"baz"}}},
+			args: args{path: "product", ids: []interface{}{"foo"}, params: url.Values{"bar": []string{"baz"}}},
 			want: "https://api.mercadolibre.com/items/foo?bar=baz",
 		},
 		{
 			name: "all products with params",
 			args: args{path: "product", params: url.Values{"bar": []string{"baz"}}},
-			want: "https://api.mercadolibre.com/items?bar=baz",
+			want: "https://api.mercadolibre.com/items/?bar=baz",
 		},
 		{
 			name:    "nonexistant path",
@@ -62,7 +61,7 @@ func TestMeLi_RouteTo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			got, err := ml.RouteTo(tt.args.path, tt.args.params, tt.args.id)
+			got, err := ml.RouteTo(tt.args.path, tt.args.params, tt.args.ids...)
 			if err != tt.wantErr {
 				t.Errorf("MeLi.RouteTo() error = %v, wantErr %v", err, tt.wantErr)
 				return

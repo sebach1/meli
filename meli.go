@@ -14,11 +14,11 @@ type MeLi struct {
 	Credentials creds
 }
 
-type ProductId string
-
-func (pId ProductId) String() string { return string(pId) }
-
-func (ml *MeLi) RouteTo(path string, params url.Values, ids ...fmt.Stringer) (string, error) {
+// RouteTo retrieves a route given a path alias to the desired resource
+// Notice: it returns a trailing slash on the return value in case it can contain childs.
+// For example, in the case of /items, it'll return /items/ instead (alerting it is a sort of dir of sub-nodes)
+// Path can be "auth", "product", "category_predict", "category", "category_attributes"
+func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (string, error) {
 	base := "https://api.mercadolibre.com"
 	ids = rmEmptyStringers(ids)
 	if len(ids) == 0 {
@@ -28,22 +28,27 @@ func (ml *MeLi) RouteTo(path string, params url.Values, ids ...fmt.Stringer) (st
 	case "auth":
 		base += "/oauth/token"
 	case "product":
-		base += fmt.Sprintf("/items/%s", ids[0])
-	case "variant":
-		base += fmt.Sprintf("/items/%s/variations/%s", ids[0], ids[1])
+		base += "/items/%s"
 	case "category_predict":
-		base += fmt.Sprintf("/sites/%s/category_predictor/predict", ids[0])
+		base += "/sites/%s/category_predictor/predict"
 	case "category":
-		base += fmt.Sprintf("/categories/%s", ids[0])
+		base += "/categories/%s"
 	case "category_attributes":
-		base += fmt.Sprintf("/categories/%s/attributes", ids[0])
+		base += "/categories/%s/attributes"
 	default:
 		return "", errNonexistantPath
 	}
-	base = strings.TrimRight(base, "/")
-	if query := params.Encode(); query != "" {
-		base = base + "?" + query
+	if ids != nil {
+		base = fmt.Sprintf(base, ids...)
+	} else {
+		base = strings.ReplaceAll(base, "%s", "")
 	}
+	URL, err := url.Parse(base)
+	if err != nil {
+		return "", err
+	}
+	URL.RawQuery = params.Encode()
+	base = URL.String()
 	return base, nil
 }
 
