@@ -401,3 +401,34 @@ func (prod *Product) modAndReturn(mod func(*Product)) *Product {
 	mod(prod)
 	return prod
 }
+
+func TestProduct_ManageStock(t *testing.T) {
+	tests := []struct {
+		name      string
+		stockArg  int
+		stockWant int
+		stockHave int
+	}{
+		{
+			name:      "rest stock",
+			stockArg:  -1,
+			stockWant: 3 - 1,
+			stockHave: 3,
+		},
+		{
+			name:      "add stock",
+			stockArg:  3,
+			stockWant: 3,
+			stockHave: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Product{AvailableQuantity: tt.stockHave}
+			p.ManageStock(tt.stockArg)
+			if diff := cmp.Diff(tt.stockWant, p.AvailableQuantity); diff != "" {
+				t.Errorf("Product.AddVariant() mismatch (-want +got): %s", diff)
+			}
+		})
+	}
+}
