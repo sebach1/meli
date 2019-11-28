@@ -158,10 +158,14 @@ func (ml *MeLi) updateProduct(prod *Product) (*Product, error) {
 		return nil, err
 	}
 	URL, err := ml.RouteTo("product", params, prod.Id)
+
 	if err != nil {
 		return nil, err
 	}
 	prod.Id = "" // Unset id since its in the route
+	if prod.Deleted {
+		prod = &Product{Deleted: true}
+	}
 	jsonProd, err := json.Marshal(prod)
 	if err != nil {
 		return nil, err
