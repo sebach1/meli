@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sebach1/meli/melitest"
 )
 
 func TestMeLi_GetProduct(t *testing.T) {
@@ -17,14 +18,14 @@ func TestMeLi_GetProduct(t *testing.T) {
 		args     args
 		wantProd *Product
 		wantErr  error
-		stub     *stub
+		stub     *melitest.Stub
 	}{
 		{
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{id: "foo"},
-			stub: &stub{status: 404,
-				body: svErrFooBar,
+			stub: &melitest.Stub{Status: 404,
+				Body: svErrFooBar,
 			},
 		},
 		{
@@ -32,15 +33,15 @@ func TestMeLi_GetProduct(t *testing.T) {
 			wantErr:  nil,
 			wantProd: &Product{Id: "foo", Title: "bar"},
 			args:     args{id: "foo"},
-			stub: &stub{status: 200,
-				body: &Product{Id: "foo", Title: "bar"},
+			stub: &melitest.Stub{Status: 200,
+				Body: &Product{Id: "foo", Title: "bar"},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			gotProd, err := ml.GetProduct(tt.args.id)
@@ -60,7 +61,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 		name     string
 		creds    creds
 		prod     *Product
-		stub     *stub
+		stub     *melitest.Stub
 		wantProd *Product
 		wantErr  error
 	}{
@@ -85,12 +86,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:     "while EDITing product REMOTE returns CORRECTly",
 			prod:     &Product{Id: "foo", Title: "bar"},
 			wantProd: &Product{Id: "foo", Title: "bar", Price: 0},
-			stub: &stub{status: 200,
-				wantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}), // The body sent lacks of id since its in the route
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 200,
+				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}), // The body sent lacks of id since its in the route
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: &Product{Id: "foo", Title: "bar", Price: 0},
+				Body: &Product{Id: "foo", Title: "bar", Price: 0},
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -98,12 +99,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:     "while CREATing product, REMOTE returns CORRECTly",
 			prod:     &Product{Title: "bar"},
 			wantProd: &Product{Id: "quux", Title: "bar"},
-			stub: &stub{status: 200,
-				wantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 200,
+				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: &Product{Id: "quux", Title: "bar"},
+				Body: &Product{Id: "quux", Title: "bar"},
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -111,12 +112,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:    "while CREATing product, REMOTE returns CORRECTly",
 			prod:    &Product{Title: "bar"},
 			wantErr: svErrFooBar,
-			stub: &stub{status: 400,
-				wantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 400,
+				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: svErrFooBar,
+				Body: svErrFooBar,
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -124,12 +125,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:    "while EDITing product, REMOTE returns an ERROR",
 			prod:    &Product{Id: "foo", Title: "bar"},
 			wantErr: svErrFooBar,
-			stub: &stub{status: 400,
-				wantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 400,
+				WantBodyReceive: JSONMarshal(t, &Product{Title: "bar"}),
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: svErrFooBar,
+				Body: svErrFooBar,
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -137,7 +138,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{Credentials: tt.creds}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			gotProd, err := ml.SetProduct(tt.prod)
@@ -156,7 +157,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		name    string
 		creds   creds
 		prod    *Product
-		stub    *stub
+		stub    *melitest.Stub
 		wantErr error
 	}{
 		{
@@ -168,12 +169,12 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
 			prod: &Product{Id: "foo"},
-			stub: &stub{status: 200,
-				wantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 200,
+				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: &Product{Id: "foo", Title: "bar", Price: 0, Deleted: true},
+				Body: &Product{Id: "foo", Title: "bar", Price: 0, Deleted: true},
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -181,12 +182,12 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			name:    "while EDITing product, REMOTE returns an ERROR",
 			prod:    &Product{Id: "foo"},
 			wantErr: svErrFooBar,
-			stub: &stub{status: 400,
-				wantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 400,
+				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
+				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
 				},
-				body: svErrFooBar,
+				Body: svErrFooBar,
 			},
 			creds: creds{Access: "baz"},
 		},
@@ -194,7 +195,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{Credentials: tt.creds}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			tt.prod.Delete()
@@ -338,40 +339,83 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 }
 
 func TestProduct_AddVariant(t *testing.T) {
-	type args struct {
-		v *Variant
-	}
 	tests := []struct {
 		name    string
 		prod    *Product
 		newProd *Product
 		wantErr error
-		args    args
+		v       *Variant
 	}{
 		{
-			name: "vars already exists",
-			prod: &Product{
-				Variants: []*Variant{
-					{Id: 5},
-				},
-			},
-			newProd: &Product{
-				Variants: []*Variant{
-					{Id: 5},
-				},
-			},
-			args: args{v: &Variant{Id: 5}},
+			name:    "given var has NO COMBINATIONS",
+			prod:    gProducts.Foo.None.copy(t),
+			wantErr: errNilCombinations,
+			v:       gVariants.Bar.AttributeCombinations.Zero.copy(t),
+		},
+		{
+			name:    "given VAR IS ALREADY in prod",
+			prod:    gProducts.Bar.None.copy(t),
+			wantErr: errIncompatibleVar,
+			v:       gVariants.Bar.None.copy(t),
+		},
+		{
+			name:    "given var is INCOMPATIBLE due repeated attr combinations",
+			prod:    gProducts.Foo.None.copy(t),
+			wantErr: errIncompatibleVar,
+			v:       gVariants.Bar.AttributeCombinations.Alt.copy(t),
+		},
+		{
+			name:    "given var has NIL PRICE",
+			prod:    gProducts.Foo.None.copy(t),
+			wantErr: errNilVarPrice,
+			v:       gVariants.Bar.Price.Zero.copy(t),
+		},
+		{
+			name:    "given var has NIL STOCK",
+			prod:    gProducts.Foo.None.copy(t),
+			wantErr: errNilVarStock,
+			v:       gVariants.Bar.AvailableQuantity.Zero.copy(t),
+		},
+		{
+			name:    "given var has NIL PICS",
+			prod:    gProducts.Foo.None.copy(t),
+			wantErr: errNilVarPictures,
+			v:       gVariants.Bar.PictureIds.Zero.copy(t),
+		},
+		{
+			name:    "given var is SUCCESSFULLY ADDED",
+			prod:    gProducts.Foo.None.copy(t),
+			newProd: gProducts.Foo.None.copy(t).addVariantUnsafe(gVariants.Bar.None),
+			v:       gVariants.Bar.None.copy(t),
+		},
+		{
+			name:    "given var is SUCCESSFULLY ADDED on EMPTY PROD",
+			prod:    gProducts.Foo.Variants.Zero.copy(t),
+			newProd: gProducts.Foo.Variants.Zero.copy(t).addVariantUnsafe(gVariants.Bar.None),
+			v:       gVariants.Bar.None.copy(t),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := tt.prod.AddVariant(tt.args.v)
+			originalProd := tt.prod.copy(t)
+			gotErr := tt.prod.AddVariant(tt.v)
 			if fmt.Sprintf("%v", gotErr) != fmt.Sprintf("%v", tt.wantErr) {
 				t.Errorf("Product.AddVariant() errors mismatch; got: %v; want: %v", gotErr, tt.wantErr)
 			}
-			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
+
+			if tt.wantErr != nil || gotErr != nil {
+				tt.newProd = originalProd
+				return
+			}
+
+			if diff := cmp.Diff(tt.newProd, tt.prod); diff != "" {
 				t.Errorf("Product.AddVariant() mismatch (-want +got): %s", diff)
 			}
 		})
 	}
+}
+
+func (p *Product) addVariantUnsafe(v *Variant) *Product {
+	p.Variants = append(p.Variants, v)
+	return p
 }

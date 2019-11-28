@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sebach1/meli/melitest"
 )
 
 func TestMeLi_CategoryAttributes(t *testing.T) {
@@ -16,7 +17,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 		args    args
 		want    []*Attribute
 		wantErr error
-		stub    *stub
+		stub    *melitest.Stub
 	}{
 		{
 			name:    "NIL cat ID",
@@ -27,15 +28,15 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
-			stub: &stub{status: 404,
-				body: svErrFooBar,
+			stub: &melitest.Stub{Status: 404,
+				Body: svErrFooBar,
 			},
 		},
 		{
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
-			stub: &stub{status: 200,
-				body: []*Attribute{
+			stub: &melitest.Stub{Status: 200,
+				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux"},
 				},
@@ -49,7 +50,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			got, err := ml.CategoryAttributes(tt.args.catId)
@@ -73,7 +74,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 		args    args
 		want    []*Attribute
 		wantErr error
-		stub    *stub
+		stub    *melitest.Stub
 	}{
 		{
 			name:    "NIL cat ID",
@@ -84,15 +85,15 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
-			stub: &stub{status: 404,
-				body: svErrFooBar,
+			stub: &melitest.Stub{Status: 404,
+				Body: svErrFooBar,
 			},
 		},
 		{
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
-			stub: &stub{status: 200,
-				body: []*Attribute{
+			stub: &melitest.Stub{Status: 200,
+				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux", Tags: []Tag{{"allow_variations": true}}},
 				},
@@ -105,7 +106,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			got, err := ml.CategoryVariableAttributes(tt.args.catId)

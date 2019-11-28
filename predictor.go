@@ -26,11 +26,7 @@ func (sId SiteId) String() string { return string(sId) }
 func (ml *MeLi) Classify(title string) (*Category, error) {
 	params := url.Values{}
 	params.Set("title", title)
-<<<<<<< HEAD
-	URL, err := ml.RouteTo("category_predict", params, SiteId("MLA"))
-=======
 	URL, err := ml.RouteTo("category_predict", params, "MLA")
->>>>>>> d3bfd668618351eb4286afc9c49e81f73b1bd7ea
 	if err != nil {
 		return nil, err
 	}
@@ -51,13 +47,8 @@ func (ml *MeLi) Classify(title string) (*Category, error) {
 	return cat, nil
 }
 
-<<<<<<< HEAD
 func (ml *MeLi) ClassifyBatch(titles []string) ([]*Category, error) {
-	URL, err := ml.RouteTo("category_predict", nil)
-=======
-func (ml *MeLi) ClassifyBatch(titles []string) ([]*CategoryPrediction, error) {
 	URL, err := ml.RouteTo("category_predict", nil, "MLA")
->>>>>>> d3bfd668618351eb4286afc9c49e81f73b1bd7ea
 	if err != nil {
 		return nil, err
 	}

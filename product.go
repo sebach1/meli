@@ -4,8 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"sync"
+	"testing"
 	"time"
+
+	"github.com/sebach1/meli/copy"
 )
+
+type ProductId string
 
 type Product struct {
 	Id              ProductId `json:"id,omitempty"`
@@ -243,4 +248,14 @@ func (prod *Product) rmVariantByIdx(i int) {
 	prod.Variants[lastIndex] = nil // Notices the GC to rm the last elem to avoid mem-leak
 	prod.Variants = prod.Variants[:lastIndex]
 	lock.Unlock()
+}
+
+func (prod *Product) copy(t *testing.T) *Product {
+	t.Helper()
+	newProd := &Product{}
+	err := copy.Copy(newProd, prod)
+	if err != nil {
+		t.Fatalf("Couldnt be able to copy struct: %v", err)
+	}
+	return newProd
 }

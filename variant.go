@@ -3,12 +3,12 @@ package meli
 import (
 	"bytes"
 	"encoding/json"
-	"strconv"
+	"testing"
+
+	"github.com/sebach1/meli/copy"
 )
 
 type VariantId int
-
-func (vId VariantId) String() string { return strconv.Itoa(int(vId)) }
 
 type Variant struct {
 	Id    VariantId `json:"id,omitempty"`
@@ -20,7 +20,7 @@ type Variant struct {
 	Attributes            []*Attribute            `json:"attributes,omitempty"`
 	AttributeCombinations []*AttributeCombination `json:"attribute_combinations,omitempty"`
 	SaleTerms             []*SaleTerm             `json:"sale_terms,omitempty"`
-	PictureIds            []string                `json:"picture_ids,omitempty"`
+	PictureIds            []PictureId             `json:"picture_ids,omitempty"`
 	CatalogProductId      interface{}             `json:"catalog_product_id,omitempty"`
 }
 
@@ -138,15 +138,40 @@ func (v *Variant) isCompatible(otherV *Variant) bool {
 	if v.Id == otherV.Id {
 		return false
 	}
+	var equalsQt int
 	for _, vAtt := range v.AttributeCombinations {
-		for _, otherVAtt := range otherV.AttributeCombinations {
-			if vAtt.Id != otherVAtt.Id {
-				continue
-			}
-			if vAtt.ValueId == otherVAtt.ValueId || vAtt.ValueName == otherVAtt.ValueName {
-				return false
+		for _, oAtt := range otherV.AttributeCombinations {
+			if vAtt.equals(oAtt) {
+				equalsQt += 1
 			}
 		}
 	}
+	if equalsQt == len(v.AttributeCombinations) || equalsQt == len(otherV.AttributeCombinations) {
+		return false
+	}
 	return true
+}
+
+func (attC *AttributeCombination) equals(otherC *AttributeCombination) bool {
+	if attC.Id != otherC.Id {
+		return false
+	}
+	if attC.ValueId != otherC.ValueId {
+		return false
+	}
+	if attC.ValueName != otherC.ValueName {
+		return false
+	}
+	return true
+}
+
+func (v *Variant) copy(t *testing.T) *Variant {
+	t.Helper()
+	newVar := &Variant{}
+	err := copy.Copy(newVar, v)
+
+	if err != nil {
+		t.Fatalf("Couldnt be able to copy struct: %v", err)
+	}
+	return newVar
 }

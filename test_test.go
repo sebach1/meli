@@ -1,19 +1,11 @@
 package meli
 
 import (
-	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"io"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/sebach1/meli/internal/test/assist"
 )
 
 var (
@@ -23,73 +15,55 @@ var (
 	svErrFooBar = &Error{ResponseErr: errFoo.Error(), Message: errBar.Error()}
 )
 
-type stub struct {
-	status            int
-	body              interface{}
-	wantBodyReceive   []byte
-	wantParamsReceive url.Values
+var (
+	gVariants goldenVariants
+	gProducts goldenProducts
+)
+
+func init() {
+	assist.DecodeJsonnet("variants", &gVariants)
+	assist.DecodeJsonnet("products", &gProducts)
 }
 
-func (s *stub) serve(t *testing.T, ml *MeLi) (Close func()) {
-	t.Helper()
-	if s == nil {
-		return func() {}
-	}
-	sv := httptest.NewTLSServer(s.stubBody(t, s.body, s.status))
-	ml.Client = stubClient(sv)
-	return sv.Close
+type goldenVariants struct {
+	Foo  *variadicVariants `json:"foo,omitempty"`
+	Bar  *variadicVariants `json:"bar,omitempty"`
+	Zero *Variant          `json:"zero,omitempty"`
 }
 
-func stubClient(sv *httptest.Server) http.Client {
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
-			return net.Dial(network, sv.Listener.Addr().String())
-		},
-	}
-	return http.Client{Transport: transport}
+type variadicVariants struct {
+	None                  *Variant     `json:"none,omitempty"`
+	Id                    *optVariants `json:"id,omitempty"`
+	Price                 *optVariants `json:"price,omitempty"`
+	AvailableQuantity     *optVariants `json:"available_quantity,omitempty"`
+	AttributeCombinations *optVariants `json:"attribute_combinations,omitempty"`
+	PictureIds            *optVariants `json:"picture_ids,omitempty"`
 }
 
-func (s *stub) stubBody(t *testing.T, body interface{}, status int) http.Handler {
-	t.Helper()
-	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		s.assertReceive(t, req)
-		res.WriteHeader(status)
-		err := json.NewEncoder(res).Encode(body)
-		if err != nil {
-			t.Fatalf("couldn't marshal given stub to body: %v", err)
-		}
-	})
+type optVariants struct {
+	Alt  *Variant `json:"alt,omitempty"`
+	Zero *Variant `json:"zero,omitempty"`
 }
 
-func (s *stub) assertReceive(t *testing.T, req *http.Request) {
-	t.Helper()
-	assertBody(t, req, s.wantBodyReceive)
-	if s.wantParamsReceive == nil {
-		s.wantParamsReceive = url.Values{}
-	}
-	assertParams(t, req, s.wantParamsReceive)
+type goldenProducts struct {
+	Foo  *variadicProducts `json:"foo,omitempty"`
+	Bar  *variadicProducts `json:"bar,omitempty"`
+	Zero *Product          `json:"zero,omitempty"`
 }
 
-func assertBody(t *testing.T, req *http.Request, assertion []byte) {
-	t.Helper()
-	defer req.Body.Close()
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil && err != io.EOF {
-		t.Fatalf("couldn't read body req: %v", err)
-	}
-	if diff := cmp.Diff(string(assertion), string(body)); diff != "" {
-		t.Errorf("Received another BODY on server () mismatch (-want +got): %s", diff)
-	}
+type variadicProducts struct {
+	None              *Product     `json:"none,omitempty"`
+	Id                *optProducts `json:"id,omitempty"`
+	Variants          *optProducts `json:"variations,omitempty"`
+	CategoryId        *optProducts `json:"category_id,omitempty"`
+	AvailableQuantity *optProducts `json:"available_quantity,omitempty"`
+	Title             *optProducts `json:"title,omitempty"`
+	Price             *optProducts `json:"price,omitempty"`
 }
 
-func assertParams(t *testing.T, req *http.Request, assertion url.Values) {
-	t.Helper()
-	got := req.URL.Query()
-
-	if diff := cmp.Diff(assertion, got); diff != "" {
-		t.Errorf("Received another PARAMS on server () mismatch (-want +got): %s", diff)
-	}
+type optProducts struct {
+	Alt  *Product `json:"alt,omitempty"`
+	Zero *Product `json:"zero,omitempty"`
 }
 
 func JSONMarshal(t *testing.T, v interface{}) []byte {

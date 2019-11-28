@@ -14,16 +14,16 @@ type MeLi struct {
 	Credentials creds
 }
 
+func (ml *MeLi) SetClient(c http.Client) {
+	ml.Client = c
+}
+
 // RouteTo retrieves a route given a path alias to the desired resource
 // Notice: it returns a trailing slash on the return value in case it can contain childs.
 // For example, in the case of /items, it'll return /items/ instead (alerting it is a sort of dir of sub-nodes)
 // Path can be "auth", "product", "category_predict", "category", "category_attributes"
 func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (string, error) {
 	base := "https://api.mercadolibre.com"
-	ids = rmEmptyStringers(ids)
-	if len(ids) == 0 {
-		ids = []fmt.Stringer{ProductId("")}
-	}
 	switch path {
 	case "auth":
 		base += "/oauth/token"
@@ -50,16 +50,6 @@ func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (str
 	URL.RawQuery = params.Encode()
 	base = URL.String()
 	return base, nil
-}
-
-func rmEmptyStringers(stringers []fmt.Stringer) []fmt.Stringer {
-	var fullStringers []fmt.Stringer
-	for _, str := range stringers {
-		if str != nil {
-			fullStringers = append(fullStringers, str)
-		}
-	}
-	return fullStringers
 }
 
 func (ml *MeLi) paramsWithToken() (url.Values, error) {

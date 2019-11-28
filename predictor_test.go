@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sebach1/meli/melitest"
 )
 
 func TestMeLi_Classify(t *testing.T) {
@@ -15,7 +16,7 @@ func TestMeLi_Classify(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		stub    *stub
+		stub    *melitest.Stub
 		wantCat *Category
 		wantErr error
 	}{
@@ -23,9 +24,9 @@ func TestMeLi_Classify(t *testing.T) {
 			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{title: "quux"},
-			stub: &stub{status: 200,
-				body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 200,
+				Body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
+				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
 				},
 			},
@@ -35,9 +36,9 @@ func TestMeLi_Classify(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{title: "quux"},
-			stub: &stub{status: 400,
-				body: svErrFooBar,
-				wantParamsReceive: url.Values{
+			stub: &melitest.Stub{Status: 400,
+				Body: svErrFooBar,
+				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
 				},
 			},
@@ -46,7 +47,7 @@ func TestMeLi_Classify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			gotCat, err := ml.Classify(tt.args.title)
@@ -69,7 +70,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		stub     *stub
+		stub     *melitest.Stub
 		wantCats []*Category
 		wantErr  error
 	}{
@@ -77,12 +78,12 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{titles: []string{"a", "b"}},
-			stub: &stub{status: 200,
-				body: []*Category{
+			stub: &melitest.Stub{Status: 200,
+				Body: []*Category{
 					{Id: "foo", PredictionProbability: 1, Name: "bar"},
 					{Id: "baz", PredictionProbability: 1, Name: "quux"},
 				},
-				wantBodyReceive: JSONMarshal(t,
+				WantBodyReceive: JSONMarshal(t,
 					[]map[string]string{{"title": "a"}, {"title": "b"}},
 				),
 			},
@@ -95,9 +96,9 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			name:    "sends no body",
 			wantErr: svErrFooBar,
 			args:    args{titles: []string{}},
-			stub: &stub{status: 400,
-				body:            svErrFooBar,
-				wantBodyReceive: JSONMarshal(t, []string{}),
+			stub: &melitest.Stub{Status: 400,
+				Body:            svErrFooBar,
+				WantBodyReceive: JSONMarshal(t, []string{}),
 			},
 			wantCats: nil,
 		},
@@ -105,7 +106,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.serve(t, ml)
+			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
 			gotCats, err := ml.ClassifyBatch(tt.args.titles)
