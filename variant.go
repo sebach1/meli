@@ -167,11 +167,19 @@ func (attC *AttributeCombination) equals(otherC *AttributeCombination) bool {
 
 func (v *Variant) copy(t *testing.T) *Variant {
 	t.Helper()
-	newVar := &Variant{}
-	err := copy.Copy(newVar, v)
-
+	newVar := Variant{}
+	err := copy.Copy(&newVar, v)
 	if err != nil {
 		t.Fatalf("Couldnt be able to copy struct: %v", err)
 	}
-	return newVar
+	newVar.AttributeCombinations = nil
+	for _, attC := range v.AttributeCombinations {
+		newAttC := &AttributeCombination{}
+		err = copy.Copy(newAttC, attC)
+		if err != nil {
+			t.Fatalf("Couldnt be able to copy struct: %v", err)
+		}
+		newVar.AttributeCombinations = append(newVar.AttributeCombinations, newAttC)
+	}
+	return &newVar
 }
