@@ -129,33 +129,26 @@ func (ml *MeLi) updateVariant(v *Variant, prodId ProductId) (*Variant, error) {
 }
 
 func (ml *MeLi) createVariant(v *Variant, prodId ProductId) (*Variant, error) {
-	params, err := ml.paramsWithToken()
+	prod, err := ml.GetProduct(prodId)
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("/items/%s/variations/%s", params, prodId)
+	err = prod.AddVariant(v)
 	if err != nil {
 		return nil, err
 	}
-	jsonVar, err := json.Marshal(v)
+	prod, err = ml.SetProduct(prod)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ml.Post(URL, bytes.NewReader(jsonVar))
-	if err != nil {
-		return nil, err
+	for _, pV := range prod.Variants {
+		if !pV.isCompatible(v) { // Note: it checks for being the same var as `v` due
+			// in .AddVariant it already errs in case of not being compat with another one
+			v = pV
+			break
+		}
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		return nil, errFromReader(resp.Body)
-	}
-	newVar := &Variant{}
-	err = json.NewDecoder(resp.Body).Decode(newVar)
-	if err != nil {
-		return nil, err
-	}
-	return newVar, nil
-
+	return v, nil
 }
 
 func (v *Variant) isCompatible(otherV *Variant) bool {
