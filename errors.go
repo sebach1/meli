@@ -8,8 +8,6 @@ import (
 )
 
 var (
-	errNonexistantPath = errors.New("the given PATH does NOT EXISTS")
-
 	errNilApplicationId = errors.New("the APPLICATION Id is nil")
 	errNilAccessToken   = errors.New("the ACCESS TOKEN is NIL")
 	errNilRefreshToken  = errors.New("the REFRESH TOKEN is NIL")
