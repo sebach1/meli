@@ -118,7 +118,7 @@ func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	return
 }
 func (ml *MeLi) DeleteProduct(id ProductId) (*Product, error) {
-	prod := &Product{Id: ProductId(id)}
+	prod := &Product{Id: id}
 	prod.Delete()
 	return ml.updateProduct(prod)
 }
