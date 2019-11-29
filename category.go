@@ -15,8 +15,6 @@ type Category struct {
 
 type CategoryId string
 
-func (cId CategoryId) String() string { return string(cId) }
-
 func (ml *MeLi) CategoryAttributes(catId CategoryId) ([]*Attribute, error) {
 	if catId == "" {
 		return nil, errNilCategoryId

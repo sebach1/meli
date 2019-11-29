@@ -21,8 +21,6 @@ type Variation struct {
 
 type SiteId string
 
-func (sId SiteId) String() string { return string(sId) }
-
 func (ml *MeLi) Classify(title string) (*Category, error) {
 	params := url.Values{}
 	params.Set("title", title)
