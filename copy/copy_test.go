@@ -32,7 +32,6 @@ type Employee struct {
 	DoubleAge int32
 	SuperRule string
 	Notes     []string
-	flags     []byte
 }
 
 func (employee *Employee) Role(role string) {
