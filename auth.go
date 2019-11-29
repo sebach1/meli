@@ -24,7 +24,7 @@ func (ml *MeLi) RefreshToken() error {
 	params.Set("refresh_token", string(ml.Credentials.Refresh))
 	params.Set("client_id", string(ml.Credentials.ApplicationId))
 	params.Set("client_secret", string(ml.Credentials.Secret))
-	URL, err := ml.RouteTo("auth", params)
+	URL, err := ml.RouteTo("/oauth/token", params)
 	if err != nil {
 		return err
 	}

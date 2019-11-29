@@ -12,58 +12,43 @@ func TestMeLi_RouteTo(t *testing.T) {
 		params url.Values
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr error
+		name     string
+		args     args
+		want     string
+		wantsErr bool
 	}{
 		{
-			name: "all products",
-			args: args{path: "product"},
+			name:     "gives more ids than formattable",
+			args:     args{path: "%s/%s", ids: []interface{}{"foo", "bar", "baz"}},
+			wantsErr: true,
+		},
+		{
+			name: "all resource",
+			args: args{path: "/items/%s"},
 			want: "https://api.mercadolibre.com/items/",
 		},
 		{
-			name: "single product",
-			args: args{path: "product", ids: []interface{}{"foo"}},
+			name: "multiple embedding",
+			args: args{path: "/items/%s/variations/%s/sth/%s", ids: []interface{}{"foo", "bar", "baz"}},
+			want: "https://api.mercadolibre.com/items/foo/variations/bar/sth/baz",
+		},
+		{
+			name: "single embedding",
+			args: args{path: "/items/%s", ids: []interface{}{"foo"}},
 			want: "https://api.mercadolibre.com/items/foo",
 		},
 		{
-			name: "auth",
-			args: args{path: "auth"},
+			name: "wout formatting",
+			args: args{path: "/oauth/token"},
 			want: "https://api.mercadolibre.com/oauth/token",
-		},
-		{
-			name: "category predict",
-			args: args{path: "category_predict", ids: []interface{}{"MLA"}},
-			want: "https://api.mercadolibre.com/sites/MLA/category_predictor/predict",
-		},
-		{
-			name: "category predict with params",
-			args: args{path: "category_predict", ids: []interface{}{"MLA"}, params: url.Values{"foo": []string{"bar"}}},
-			want: "https://api.mercadolibre.com/sites/MLA/category_predictor/predict?foo=bar",
-		},
-		{
-			name: "single product with params",
-			args: args{path: "product", ids: []interface{}{"foo"}, params: url.Values{"bar": []string{"baz"}}},
-			want: "https://api.mercadolibre.com/items/foo?bar=baz",
-		},
-		{
-			name: "all products with params",
-			args: args{path: "product", params: url.Values{"bar": []string{"baz"}}},
-			want: "https://api.mercadolibre.com/items/?bar=baz",
-		},
-		{
-			name:    "nonexistant path",
-			args:    args{path: "invalid", params: url.Values{"bar": []string{"baz"}}},
-			wantErr: errNonexistantPath,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
 			got, err := ml.RouteTo(tt.args.path, tt.args.params, tt.args.ids...)
-			if err != tt.wantErr {
-				t.Errorf("MeLi.RouteTo() error = %v, wantErr %v", err, tt.wantErr)
+			if (err != nil) != tt.wantsErr {
+				t.Errorf("MeLi.RouteTo() error = %v, wantErr %v", err, tt.wantsErr)
 				return
 			}
 			if got != tt.want {

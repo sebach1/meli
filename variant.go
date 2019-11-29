@@ -31,6 +31,30 @@ type AttributeCombination struct {
 	ValueId   string `json:"value_id,omitempty"`
 }
 
+func (ml *MeLi) GetVariant(varId VariantId, prodId ProductId) (*Variant, error) {
+	if prodId == "" {
+		return nil, errNilProductId
+	}
+	URL, err := ml.RouteTo("/items/%s/variations/%s", nil, prodId, varId)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ml.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, errFromReader(resp.Body)
+	}
+	v := &Variant{}
+	err = json.NewDecoder(resp.Body).Decode(v)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 func (ml *MeLi) SetVariant(v *Variant, prodId ProductId) (newVar *Variant, err error) {
 	if prodId == "" {
 		return nil, errNilProductId
@@ -79,7 +103,7 @@ func (ml *MeLi) updateVariant(v *Variant, prodId ProductId) (*Variant, error) {
 		return nil, err
 	}
 
-	URL, err := ml.RouteTo("variant", params, prodId, v.Id)
+	URL, err := ml.RouteTo("/items/%s/variations/%s", params, prodId, v.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +133,7 @@ func (ml *MeLi) createVariant(v *Variant, prodId ProductId) (*Variant, error) {
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("variant", params, prodId)
+	URL, err := ml.RouteTo("/items/%s/variations/%s", params, prodId)
 	if err != nil {
 		return nil, err
 	}

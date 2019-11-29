@@ -86,7 +86,7 @@ type Product struct {
 }
 
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
-	URL, err := ml.RouteTo("product", nil, prodId)
+	URL, err := ml.RouteTo("/items/%s", nil, prodId)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (ml *MeLi) createProduct(prod *Product) (*Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("product", params)
+	URL, err := ml.RouteTo("/items/%s", params)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (ml *MeLi) updateProduct(prod *Product) (*Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("product", params, prod.Id)
+	URL, err := ml.RouteTo("/items/%s", params, prod.Id)
 
 	if err != nil {
 		return nil, err

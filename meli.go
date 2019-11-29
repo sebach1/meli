@@ -24,24 +24,10 @@ func (ml *MeLi) SetClient(c http.Client) {
 // Path can be "auth", "product", "category_predict", "category", "category_attributes"
 func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (string, error) {
 	base := "https://api.mercadolibre.com"
-	switch path {
-	case "auth":
-		base += "/oauth/token"
-	case "product":
-		base += "/items/%s"
-	case "category_predict":
-		base += "/sites/%s/category_predictor/predict"
-	case "category":
-		base += "/categories/%s"
-	case "category_attributes":
-		base += "/categories/%s/attributes"
-	default:
-		return "", errNonexistantPath
-	}
 	if ids != nil {
-		base = fmt.Sprintf(base, ids...)
+		base += fmt.Sprintf(path, ids...)
 	} else {
-		base = strings.ReplaceAll(base, "%s", "")
+		base += strings.ReplaceAll(path, "%s", "")
 	}
 	URL, err := url.Parse(base)
 	if err != nil {

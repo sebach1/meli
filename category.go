@@ -21,7 +21,7 @@ func (ml *MeLi) CategoryAttributes(catId CategoryId) ([]*Attribute, error) {
 	if catId == "" {
 		return nil, errNilCategoryId
 	}
-	URL, err := ml.RouteTo("category_attributes", nil, catId)
+	URL, err := ml.RouteTo("/categories/%s/attributes", nil, catId)
 	if err != nil {
 		return nil, err
 	}
