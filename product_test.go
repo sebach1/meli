@@ -390,10 +390,10 @@ func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
 	return combs
 }
 
-func (prod *Product) modAndReturn(mod func(*Product)) *Product {
-	mod(prod)
-	return prod
-}
+// func (prod *Product) modAndReturn(mod func(*Product)) *Product {
+// 	mod(prod)
+// 	return prod
+// }
 
 func TestProduct_ManageStock(t *testing.T) {
 	tests := []struct {
