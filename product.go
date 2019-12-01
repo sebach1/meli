@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sebach1/meli/copy"
+	"github.com/sebach1/meli/internal/copy"
 )
 
 type ProductId string
