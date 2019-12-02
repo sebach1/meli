@@ -6,6 +6,7 @@ import (
 )
 
 func TestMeLi_RouteTo(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path   string
 		ids    []interface{}
@@ -49,7 +50,9 @@ func TestMeLi_RouteTo(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{}
 			got, err := ml.RouteTo(tt.args.path, tt.args.params, tt.args.ids...)
 			if (err != nil) != tt.wantsErr {

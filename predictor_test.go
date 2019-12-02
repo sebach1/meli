@@ -10,6 +10,7 @@ import (
 )
 
 func TestMeLi_Classify(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		title string
 	}
@@ -45,7 +46,9 @@ func TestMeLi_Classify(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{}
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
@@ -64,6 +67,7 @@ func TestMeLi_Classify(t *testing.T) {
 }
 
 func TestMeLi_ClassifyBatch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		titles []string
 	}
@@ -104,7 +108,9 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{}
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()

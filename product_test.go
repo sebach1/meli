@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/mitchellh/copystructure"
 	"github.com/sebach1/meli/melitest"
 )
 
 func TestMeLi_GetProduct(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		id ProductId
 	}
@@ -39,7 +41,9 @@ func TestMeLi_GetProduct(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{}
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
@@ -57,6 +61,7 @@ func TestMeLi_GetProduct(t *testing.T) {
 }
 
 func TestMeLi_SetProduct(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		creds    creds
@@ -136,7 +141,9 @@ func TestMeLi_SetProduct(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{Credentials: tt.creds}
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
@@ -153,6 +160,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 }
 
 func TestMeLi_DeleteProduct(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name    string
 		creds   creds
@@ -193,7 +201,9 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ml := &MeLi{Credentials: tt.creds}
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
@@ -215,6 +225,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 }
 
 func TestProduct_ManageVarStocks(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stockById map[VariantId]int
 	}
@@ -256,7 +267,9 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.prod.ManageVarStocks(tt.args.stockById)
 			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
 				t.Errorf("Product.ManageVarStocks() mismatch (-want +got): %s", diff)
@@ -266,6 +279,7 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 }
 
 func TestProduct_RemoveCombination(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		attName string
 	}
@@ -289,7 +303,9 @@ func TestProduct_RemoveCombination(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.prod.RemoveCombination(tt.args.attName)
 			for _, v := range tt.prod.Variants {
 				if diff := cmp.Diff(tt.newCombs, v.AttributeCombinations); diff != "" {
@@ -301,6 +317,7 @@ func TestProduct_RemoveCombination(t *testing.T) {
 }
 
 func TestProduct_AddVariant(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name    string
 		prod    *Product
@@ -358,7 +375,9 @@ func TestProduct_AddVariant(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			originalProd := tt.prod.copy(t)
 			gotErr := tt.prod.AddVariant(tt.v)
 			if fmt.Sprintf("%v", gotErr) != fmt.Sprintf("%v", tt.wantErr) {
@@ -377,25 +396,8 @@ func TestProduct_AddVariant(t *testing.T) {
 	}
 }
 
-func (p *Product) appendVariantAndReturn(v *Variant) *Product {
-	p.Variants = append(p.Variants, v)
-	return p
-}
-
-func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
-	for _, attC := range combs {
-		attC.ValueId = ""
-		attC.ValueName = ""
-	}
-	return combs
-}
-
-// func (prod *Product) modAndReturn(mod func(*Product)) *Product {
-// 	mod(prod)
-// 	return prod
-// }
-
 func TestProduct_ManageStock(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name      string
 		stockArg  int
@@ -416,7 +418,9 @@ func TestProduct_ManageStock(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			p := &Product{AvailableQuantity: tt.stockHave}
 			p.ManageStock(tt.stockArg)
 			if diff := cmp.Diff(tt.stockWant, p.AvailableQuantity); diff != "" {
@@ -427,6 +431,7 @@ func TestProduct_ManageStock(t *testing.T) {
 }
 
 func TestProduct_RemoveVariant(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		varId VariantId
 	}
@@ -450,7 +455,9 @@ func TestProduct_RemoveVariant(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.prod.RemoveVariant(tt.args.varId)
 			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
 				t.Errorf("Product.RemoveVariant() mismatch (-want +got): %s", diff)
@@ -458,3 +465,34 @@ func TestProduct_RemoveVariant(t *testing.T) {
 		})
 	}
 }
+
+func (prod *Product) copy(t *testing.T) *Product {
+	t.Helper()
+	new, err := copystructure.Copy(prod)
+	if err != nil {
+		t.Fatalf("Couldnt be able to copy struct: %v", err)
+	}
+	newProd, ok := new.(*Product)
+	if !ok {
+		t.Fatalf("Couldnt be able to convert copied struct to native: %v", err)
+	}
+	return newProd
+}
+
+func (p *Product) appendVariantAndReturn(v *Variant) *Product {
+	p.Variants = append(p.Variants, v)
+	return p
+}
+
+func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
+	for _, attC := range combs {
+		attC.ValueId = ""
+		attC.ValueName = ""
+	}
+	return combs
+}
+
+// func (prod *Product) modAndReturn(mod func(*Product)) *Product {
+// 	mod(prod)
+// 	return prod
+// }

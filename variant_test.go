@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/mitchellh/copystructure"
 	"github.com/sebach1/meli/melitest"
 )
 
@@ -60,4 +61,17 @@ func TestMeLi_GetVariant(t *testing.T) {
 			}
 		})
 	}
+}
+
+func (v *Variant) copy(t *testing.T) *Variant {
+	t.Helper()
+	new, err := copystructure.Copy(v)
+	if err != nil {
+		t.Fatalf("Couldnt be able to copy struct: %v", err)
+	}
+	newVar, ok := new.(*Variant)
+	if !ok {
+		t.Fatalf("Couldnt be able to convert copied struct to native: %v", err)
+	}
+	return newVar
 }
