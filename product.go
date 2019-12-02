@@ -208,12 +208,14 @@ func (p *Product) AddVariant(v *Variant) error {
 	return nil
 }
 
-func (prod *Product) RemoveVariant(varId VariantId) {
+func (prod *Product) RemoveVariant(varId VariantId) (v *Variant) {
 	for i, pV := range prod.Variants {
 		if pV.Id == varId {
+			v = pV
 			prod.rmVariantByIdx(i)
 		}
 	}
+	return
 }
 
 func (prod *Product) ManageVarStocks(stockById map[VariantId]int) {
