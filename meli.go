@@ -29,7 +29,7 @@ func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (str
 	if ids != nil {
 		base += fmt.Sprintf(path, ids...)
 	} else {
-		base += strings.ReplaceAll(path, "%s", "")
+		base += strings.ReplaceAll(path, "%v", "")
 	}
 	URL, err := url.Parse(base)
 	if err != nil {

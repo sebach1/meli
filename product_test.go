@@ -430,7 +430,7 @@ func TestProduct_ManageStock(t *testing.T) {
 	}
 }
 
-func TestProduct_RemoveVariant(t *testing.T) {
+func TestProduct_removeVariant(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		varId VariantId
@@ -458,9 +458,9 @@ func TestProduct_RemoveVariant(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			tt.prod.RemoveVariant(tt.args.varId)
+			tt.prod.removeVariant(tt.args.varId)
 			if diff := cmp.Diff(tt.prod, tt.newProd); diff != "" {
-				t.Errorf("Product.RemoveVariant() mismatch (-want +got): %s", diff)
+				t.Errorf("Product.removeVariant() mismatch (-want +got): %s", diff)
 			}
 		})
 	}

@@ -32,7 +32,7 @@ func (ml *MeLi) GetVariant(varId VariantId, prodId ProductId) (*Variant, error) 
 	if prodId == "" {
 		return nil, errNilProductId
 	}
-	URL, err := ml.RouteTo("/items/%s/variations/%s", nil, prodId, varId)
+	URL, err := ml.RouteTo("/items/%v/variations/%v", nil, prodId, varId)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (ml *MeLi) DeleteVariant(varId VariantId, prodId ProductId) (*Variant, erro
 	if err != nil {
 		return nil, err
 	}
-	v := prod.RemoveVariant(varId)
+	v := prod.removeVariant(varId)
 	if v == nil {
 		return nil, errVariantNotFound
 	}
@@ -116,7 +116,7 @@ func (ml *MeLi) updateVariant(v *Variant, prodId ProductId) (*Variant, error) {
 		return nil, err
 	}
 
-	URL, err := ml.RouteTo("/items/%s/variations/%s", params, prodId, v.Id)
+	URL, err := ml.RouteTo("/items/%v/variations/%v", params, prodId, v.Id)
 	if err != nil {
 		return nil, err
 	}

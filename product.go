@@ -83,7 +83,7 @@ type Product struct {
 }
 
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
-	URL, err := ml.RouteTo("/items/%s", nil, prodId)
+	URL, err := ml.RouteTo("/items/%v", nil, prodId)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +101,16 @@ func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 		return nil, err
 	}
 	return prod, nil
+}
+
+func (prod *Product) removeVariant(varId VariantId) (v *Variant) {
+	for i, pV := range prod.Variants {
+		if pV.Id == varId {
+			v = pV
+			prod.rmVariantByIdx(i)
+		}
+	}
+	return
 }
 
 func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
@@ -125,7 +135,7 @@ func (ml *MeLi) createProduct(prod *Product) (*Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("/items/%s", params)
+	URL, err := ml.RouteTo("/items/%v", params)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +164,7 @@ func (ml *MeLi) updateProduct(prod *Product) (*Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	URL, err := ml.RouteTo("/items/%s", params, prod.Id)
+	URL, err := ml.RouteTo("/items/%v", params, prod.Id)
 
 	if err != nil {
 		return nil, err
@@ -203,16 +213,6 @@ func (p *Product) AddVariant(v *Variant) error {
 	}
 	p.Variants = append(p.Variants, v)
 	return nil
-}
-
-func (prod *Product) RemoveVariant(varId VariantId) (v *Variant) {
-	for i, pV := range prod.Variants {
-		if pV.Id == varId {
-			v = pV
-			prod.rmVariantByIdx(i)
-		}
-	}
-	return
 }
 
 func (prod *Product) ManageVarStocks(stockById map[VariantId]int) {
