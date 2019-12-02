@@ -28,6 +28,11 @@ func TestMeLi_RouteTo(t *testing.T) {
 			want: "https://api.mercadolibre.com/items/",
 		},
 		{
+			name: "multiple embedding multi types",
+			args: args{path: "/items/%s/variations/%s/sth/%s", ids: []interface{}{"foo", 1, "baz"}},
+			want: "https://api.mercadolibre.com/items/foo/variations/bar/sth/baz",
+		},
+		{
 			name: "multiple embedding",
 			args: args{path: "/items/%s/variations/%s/sth/%s", ids: []interface{}{"foo", "bar", "baz"}},
 			want: "https://api.mercadolibre.com/items/foo/variations/bar/sth/baz",
