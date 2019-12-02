@@ -8,8 +8,6 @@ import (
 	"github.com/sebach1/meli/copy"
 )
 
-type VariantId int
-
 type Variant struct {
 	Id    VariantId `json:"id,omitempty"`
 	Price int       `json:"price,omitempty"`
@@ -23,6 +21,8 @@ type Variant struct {
 	PictureIds            []PictureId             `json:"picture_ids,omitempty"`
 	CatalogProductId      interface{}             `json:"catalog_product_id,omitempty"`
 }
+
+type VariantId int
 
 type AttributeCombination struct {
 	Id        string `json:"id,omitempty"`
@@ -72,6 +72,22 @@ func (ml *MeLi) SetVariant(v *Variant, prodId ProductId) (newVar *Variant, err e
 		newVar, err = ml.updateVariant(v, prodId)
 	}
 	return
+}
+
+func (ml *MeLi) DeleteVariant(varId VariantId, prodId ProductId) (*Variant, error) {
+	prod, err := ml.GetProduct(prodId)
+	if err != nil {
+		return nil, err
+	}
+	v := prod.RemoveVariant(varId)
+	if v == nil {
+		return nil, errVariantNotFound
+	}
+	_, err = ml.SetProduct(prod)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 // ManageStock adds to the variant's stock the given stock.
