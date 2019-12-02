@@ -20,27 +20,27 @@ func TestMeLi_RouteTo(t *testing.T) {
 	}{
 		{
 			name:     "gives more ids than formattable",
-			args:     args{path: "%s/%s", ids: []interface{}{"foo", "bar", "baz"}},
+			args:     args{path: "%v/%v", ids: []interface{}{"foo", "bar", "baz"}},
 			wantsErr: true,
 		},
 		{
 			name: "all resource",
-			args: args{path: "/items/%s"},
+			args: args{path: "/items/%v"},
 			want: "https://api.mercadolibre.com/items/",
 		},
 		{
 			name: "multiple embedding multi types",
-			args: args{path: "/items/%s/variations/%s/sth/%s", ids: []interface{}{"foo", 1, "baz"}},
-			want: "https://api.mercadolibre.com/items/foo/variations/bar/sth/baz",
+			args: args{path: "/items/%v/variations/%v/sth/%v", ids: []interface{}{2, 1, "baz"}},
+			want: "https://api.mercadolibre.com/items/2/variations/1/sth/baz",
 		},
 		{
 			name: "multiple embedding",
-			args: args{path: "/items/%s/variations/%s/sth/%s", ids: []interface{}{"foo", "bar", "baz"}},
+			args: args{path: "/items/%v/variations/%v/sth/%v", ids: []interface{}{"foo", "bar", "baz"}},
 			want: "https://api.mercadolibre.com/items/foo/variations/bar/sth/baz",
 		},
 		{
 			name: "single embedding",
-			args: args{path: "/items/%s", ids: []interface{}{"foo"}},
+			args: args{path: "/items/%v", ids: []interface{}{"foo"}},
 			want: "https://api.mercadolibre.com/items/foo",
 		},
 		{
