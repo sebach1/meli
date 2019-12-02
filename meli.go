@@ -1,6 +1,7 @@
 package meli
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,23 @@ type MeLi struct {
 
 func (ml *MeLi) SetClient(c http.Client) {
 	ml.Client = c
+}
+
+func (ml *MeLi) SetCredentials(ctx context.Context, access, refresh, appId, secret string) error {
+	var creds creds
+	creds.Access = accessToken(access)
+	creds.Refresh = refreshToken(refresh)
+	creds.Secret = token(secret)
+	creds.ApplicationId = applicationId(appId)
+	return creds.validate()
+}
+
+func (ml *MeLi) SetAndValidateCredentials(ctx context.Context, access, refresh, appId, secret string) error {
+	err := ml.SetCredentials(ctx, access, refresh, appId, secret)
+	if err != nil {
+		return err
+	}
+	return ml.RefreshToken()
 }
 
 // RouteTo retrieves a route given a path alias to the desired resource
