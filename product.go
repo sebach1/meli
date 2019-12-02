@@ -10,13 +10,13 @@ import (
 type ProductId string
 
 type Product struct {
-	Id              ProductId `json:"id,omitempty"`
-	SiteId          string    `json:"site_id,omitempty"`
-	Title           string    `json:"title,omitempty"`
-	Status          string    `json:"status,omitempty"`
-	SellerId        int       `json:"seller_id,omitempty"`
-	CategoryId      string    `json:"category_id,omitempty"`
-	OfficialStoreId int       `json:"official_store_id,omitempty"`
+	Id              ProductId  `json:"id,omitempty"`
+	SiteId          string     `json:"site_id,omitempty"`
+	Title           string     `json:"title,omitempty"`
+	Status          string     `json:"status,omitempty"`
+	SellerId        int        `json:"seller_id,omitempty"`
+	CategoryId      CategoryId `json:"category_id,omitempty"`
+	OfficialStoreId int        `json:"official_store_id,omitempty"`
 
 	Price      int    `json:"price,omitempty"`
 	BasePrice  int    `json:"base_price,omitempty"`
@@ -26,11 +26,11 @@ type Product struct {
 	InitialQuantity   int `json:"initial_quantity,omitempty"`
 	SoldQuantity      int `json:"sold_quantity,omitempty"`
 
-	BuyingMode      string `json:"buying_mode,omitempty"`
-	Condition       string `json:"condition,omitempty"`
-	Permalink       string `json:"permalink,omitempty"`
-	Thumbnail       string `json:"thumbnail,omitempty"`
-	SecureThumbnail string `json:"secure_thumbnail,omitempty"`
+	BuyingMode      BuyingMode `json:"buying_mode,omitempty"`
+	Condition       Condition  `json:"condition,omitempty"`
+	Permalink       string     `json:"permalink,omitempty"`
+	Thumbnail       string     `json:"thumbnail,omitempty"`
+	SecureThumbnail string     `json:"secure_thumbnail,omitempty"`
 
 	ListingTypeId  string `json:"listing_type_id,omitempty"`
 	ListingSource  string `json:"listing_source,omitempty"`
@@ -42,6 +42,10 @@ type Product struct {
 	Attributes    []*Attribute   `json:"attributes,omitempty"`
 	Pictures      []*Picture     `json:"pictures,omitempty"`
 	Variants      []*Variant     `json:"variations,omitempty"`
+
+	Description struct {
+		PlainText string `json:"plain_text,omitempty"`
+	} `json:"description,omitempty"`
 
 	Descriptions []struct {
 		Id string `json:"id,omitempty"`
@@ -81,6 +85,75 @@ type Product struct {
 
 	Deleted bool `json:"deleted,omitempty"`
 }
+type Condition string
+
+func (c Condition) validate() error {
+	for _, validC := range []Condition{""} {
+		if c == validC {
+			return nil
+		}
+	}
+	return errInvalidCondition
+}
+
+type BuyingMode string
+
+func (bM BuyingMode) validate() error {
+	for _, validBM := range []BuyingMode{""} {
+		if bM == validBM {
+			return nil
+		}
+	}
+	return errInvalidBuyingMode
+}
+
+func NewProduct(
+	title, categoryId, condition, buyingMode string,
+	price, float64,
+	stock int,
+	picsSrcs []string,
+) (*Product, error) {
+	var pics []*Picture
+	for _, src := range picsSrcs {
+		pics = append(pics, &Picture{Source: src})
+	}
+	prod := &Product{
+		Title: title, CategoryId: CategoryId(categoryId), Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode),
+		Price:             price,
+		AvailableQuantity: stock,
+		Pictures:          pics,
+	}
+	err := prod.validate()
+	if err != nil {
+		return nil, err
+	}
+	return prod, nil
+}
+
+func (prod *Product) validate() error {
+	if prod.Title == "" {
+		return errNilProductTitle
+	}
+	if prod.CategoryId == "" {
+		return errNilCategoryId
+	}
+	if prod.Price == 0 {
+		return errNilPrice
+	}
+	if prod.AvailableQuantity == 0 {
+		return errNilStock
+	}
+	if err := prod.Condition.validate(); err != nil {
+		return err
+	}
+	if err := prod.BuyingMode.validate(); err != nil {
+		return err
+	}
+	if prod.Pictures == nil {
+		return errNilPictures
+	}
+	return nil
+}
 
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 	URL, err := ml.RouteTo("/items/%v", nil, prodId)
@@ -103,16 +176,6 @@ func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 	return prod, nil
 }
 
-func (prod *Product) removeVariant(varId VariantId) (v *Variant) {
-	for i, pV := range prod.Variants {
-		if pV.Id == varId {
-			v = pV
-			prod.rmVariantByIdx(i)
-		}
-	}
-	return
-}
-
 func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	if prod == nil {
 		return nil, errNilProduct
@@ -124,6 +187,7 @@ func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	}
 	return
 }
+
 func (ml *MeLi) DeleteProduct(id ProductId) (*Product, error) {
 	prod := &Product{Id: id}
 	prod.Delete()
@@ -241,6 +305,16 @@ func (p *Product) varIsCompatible(v *Variant) bool {
 		}
 	}
 	return true
+}
+
+func (prod *Product) removeVariant(varId VariantId) (v *Variant) {
+	for i, pV := range prod.Variants {
+		if pV.Id == varId {
+			v = pV
+			prod.rmVariantByIdx(i)
+		}
+	}
+	return
 }
 
 func (prod *Product) rmVariantByIdx(i int) {

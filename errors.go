@@ -14,12 +14,19 @@ var (
 	errNilSecret        = errors.New("the SECRET is NIL")
 
 	errNilProductId    = errors.New("the given PRODUCT ID is NIL")
-	errNilProduct      = errors.New("the given PRODUCT is NIL")
+	errNilProduct      = errors.New("the given PRODUCT TITLE is NIL")
+	errNilPictures     = errors.New("the given PRODUCT PICTURES are NIL")
+	errNilStock        = errors.New("the given PRODUCT STOCK is NIL")
+	errNilPrice        = errors.New("the given PRODUCT PRICE is NIL")
+	errNilProductTitle = errors.New("the given PRODUCT is NIL")
 	errNilVariant      = errors.New("the given VARIANT is NIL")
 	errVariantNotFound = errors.New("the given VARIANT does NOT EXISTS")
 	// errNilCategory     = errors.New("the given CATEGORY is NIL")
 	errNilCategoryId   = errors.New("the given CATEGORY ID is NIL")
 	errNilCombinations = errors.New("the given ATTR COMBINATIONS are NIL")
+
+	errInvalidBuyingMode = errors.New("the BUYING MODE is invalid")
+	errInvalidCondition  = errors.New("the CONDITION is invalid")
 
 	errNilVarStock    = errors.New("the VARIANT wanted to be created has NIL STOCK")
 	errNilVarPrice    = errors.New("the VARIANT wanted to be created has NIL PRICE")

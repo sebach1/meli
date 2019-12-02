@@ -4,6 +4,7 @@ type PictureId string
 
 type Picture struct {
 	Id        PictureId `json:"id,omitempty"`
+	Source    string    `json:"source,omitempty"`
 	URL       string    `json:"url,omitempty"`
 	SecureURL string    `json:"secure_url,omitempty"`
 	Size      string    `json:"size,omitempty"`
