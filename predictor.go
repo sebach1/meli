@@ -21,10 +21,10 @@ type Variation struct {
 
 type SiteId string
 
-func (ml *MeLi) Classify(title string) (*Category, error) {
+func (ml *MeLi) Classify(title string, siteId SiteId) (*Category, error) {
 	params := url.Values{}
 	params.Set("title", title)
-	URL, err := ml.RouteTo("/sites/%v/categories/category_predictor/predict", params, "MLA")
+	URL, err := ml.RouteTo("/sites/%v/categories/category_predictor/predict", params, siteId)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (ml *MeLi) Classify(title string) (*Category, error) {
 	return cat, nil
 }
 
-func (ml *MeLi) ClassifyBatch(titles []string) ([]*Category, error) {
-	URL, err := ml.RouteTo("/sites/%v/categories/category_predictor/predict", nil, "MLA")
+func (ml *MeLi) ClassifyBatch(titles []string, siteId SiteId) ([]*Category, error) {
+	URL, err := ml.RouteTo("/sites/%v/categories/category_predictor/predict", nil, siteId)
 	if err != nil {
 		return nil, err
 	}
