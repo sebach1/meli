@@ -53,7 +53,7 @@ func TestMeLi_Classify(t *testing.T) {
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
-			gotCat, err := ml.Classify(tt.args.title)
+			gotCat, err := ml.Classify(tt.args.title, "MLA")
 
 			if fmt.Sprintf("%v", tt.wantErr) != fmt.Sprintf("%v", err) {
 				t.Errorf("MeLi.Classify() error = %v, wantErr %v", err, tt.wantErr)
@@ -115,7 +115,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			svClose := tt.stub.Serve(t, ml)
 			defer svClose()
 
-			gotCats, err := ml.ClassifyBatch(tt.args.titles)
+			gotCats, err := ml.ClassifyBatch(tt.args.titles, "MLA")
 
 			if fmt.Sprintf("%v", tt.wantErr) != fmt.Sprintf("%v", err) {
 				t.Errorf("MeLi.ClassifyBatch() error = %v, wantErr %v", err, tt.wantErr)
