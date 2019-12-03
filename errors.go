@@ -22,8 +22,11 @@ var (
 	errNilVariant      = errors.New("the given VARIANT is NIL")
 	errVariantNotFound = errors.New("the given VARIANT does NOT EXISTS")
 	// errNilCategory     = errors.New("the given CATEGORY is NIL")
-	errNilCategoryId   = errors.New("the given CATEGORY ID is NIL")
-	errNilCombinations = errors.New("the given ATTR COMBINATIONS are NIL")
+	errInvalidListingTypeId = errors.New("the given LISTING TYPE ID is INVALID")
+
+	errInvalidCategoryId = errors.New("the given CATEGORY ID is INVALID")
+	errNilCategoryId     = errors.New("the given CATEGORY ID is NIL")
+	errNilCombinations   = errors.New("the given ATTR COMBINATIONS are NIL")
 
 	errInvalidBuyingMode = errors.New("the BUYING MODE is invalid")
 	errInvalidCondition  = errors.New("the CONDITION is invalid")
