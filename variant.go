@@ -7,7 +7,7 @@ import (
 
 type Variant struct {
 	Id    VariantId `json:"id,omitempty"`
-	Price int       `json:"price,omitempty"`
+	Price float64   `json:"price,omitempty"`
 
 	AvailableQuantity int `json:"available_quantity,omitempty"`
 	SoldQuantity      int `json:"sold_quantity,omitempty"`
@@ -15,7 +15,7 @@ type Variant struct {
 	Attributes            []*Attribute            `json:"attributes,omitempty"`
 	AttributeCombinations []*AttributeCombination `json:"attribute_combinations,omitempty"`
 	SaleTerms             []*SaleTerm             `json:"sale_terms,omitempty"`
-	PictureIds            []PictureId             `json:"picture_ids,omitempty"`
+	PictureIds            []string                `json:"picture_ids,omitempty"`
 	CatalogProductId      interface{}             `json:"catalog_product_id,omitempty"`
 }
 
@@ -59,11 +59,15 @@ func (ml *MeLi) SetVariant(v *Variant, prodId ProductId) (newVar *Variant, err e
 	if v == nil {
 		return nil, errNilVariant
 	}
-	err = v.validate()
 	if err != nil {
 		return nil, err
 	}
-	if v.Id == 0 {
+	exists := v.Id == 0
+	err = v.validate(exists)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
 		newVar, err = ml.createVariant(v, prodId)
 	} else {
 		newVar, err = ml.updateVariant(v, prodId)
@@ -93,20 +97,51 @@ func (v *Variant) ManageStock(stock int) {
 	v.AvailableQuantity += stock
 }
 
-func (v *Variant) validate() error {
-	if len(v.AttributeCombinations) == 0 {
-		return errNilCombinations
+func NewVariant(
+	attrs []*AttributeCombination,
+	price float64,
+	stock int,
+	picIds []string,
+) (*Variant, error) {
+	v := &Variant{AttributeCombinations: attrs, Price: price, AvailableQuantity: stock, PictureIds: picIds}
+	err := v.validate(false)
+	if err != nil {
+		return nil, err
 	}
+	return v, nil
+}
+
+func NewExistantVariant(
+	attrs []*AttributeCombination,
+	price float64,
+	stock int,
+	picIds []string,
+) (*Variant, error) {
+	v := &Variant{AttributeCombinations: attrs, Price: price, AvailableQuantity: stock, PictureIds: picIds}
+	err := v.validate(false)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (v *Variant) validate(exists bool) error {
 	if v.Price == 0 {
 		return errNilVarPrice
+	}
+	if exists {
+		return nil
 	}
 	if v.AvailableQuantity == 0 {
 		return errNilVarStock
 	}
+
+	if len(v.AttributeCombinations) == 0 {
+		return errNilCombinations
+	}
 	if len(v.PictureIds) == 0 {
 		return errNilVarPictures
 	}
-
 	return nil
 }
 

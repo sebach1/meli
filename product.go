@@ -18,23 +18,23 @@ type Product struct {
 	CategoryId      CategoryId `json:"category_id,omitempty"`
 	OfficialStoreId int        `json:"official_store_id,omitempty"`
 
-	Price      int    `json:"price,omitempty"`
-	BasePrice  int    `json:"base_price,omitempty"`
-	CurrencyId string `json:"currency_id,omitempty"`
+	Price      float64 `json:"price,omitempty"`
+	BasePrice  int     `json:"base_price,omitempty"`
+	CurrencyId string  `json:"currency_id,omitempty"`
 
 	AvailableQuantity int `json:"available_quantity,omitempty"`
 	InitialQuantity   int `json:"initial_quantity,omitempty"`
 	SoldQuantity      int `json:"sold_quantity,omitempty"`
-
+	//
 	BuyingMode      BuyingMode `json:"buying_mode,omitempty"`
 	Condition       Condition  `json:"condition,omitempty"`
 	Permalink       string     `json:"permalink,omitempty"`
 	Thumbnail       string     `json:"thumbnail,omitempty"`
 	SecureThumbnail string     `json:"secure_thumbnail,omitempty"`
 
-	ListingTypeId  string `json:"listing_type_id,omitempty"`
-	ListingSource  string `json:"listing_source,omitempty"`
-	CatalogListing bool   `json:"catalog_listing,omitempty"`
+	ListingTypeId  ListingTypeId `json:"listing_type_id,omitempty"`
+	ListingSource  string        `json:"listing_source,omitempty"`
+	CatalogListing bool          `json:"catalog_listing,omitempty"`
 
 	Shipping      *Shipping      `json:"shipping,omitempty"`
 	SellerAddress *SellerAddress `json:"seller_address,omitempty"`
@@ -88,7 +88,7 @@ type Product struct {
 type Condition string
 
 func (c Condition) validate() error {
-	for _, validC := range []Condition{""} {
+	for _, validC := range []Condition{"new", "used"} {
 		if c == validC {
 			return nil
 		}
@@ -98,8 +98,23 @@ func (c Condition) validate() error {
 
 type BuyingMode string
 
+type ListingTypeId string
+
+// TODO: test with the api responses of https://api.mercadolibre.com/sites/{Site_id}/listing_types
+func (ltId ListingTypeId) validate(siteId SiteId) error {
+	validListingTypeIds := map[SiteId][]ListingTypeId{
+		"MLA": []ListingTypeId{"gold_pro", "gold_premium", "gold_special", "gold", "silver", "bronze", "free"},
+	}
+	for _, validLtId := range validListingTypeIds[siteId] {
+		if ltId == validLtId {
+			return nil
+		}
+	}
+	return errInvalidListingTypeId
+}
+
 func (bM BuyingMode) validate() error {
-	for _, validBM := range []BuyingMode{""} {
+	for _, validBM := range []BuyingMode{"buy_it_now", "auction", "classified"} {
 		if bM == validBM {
 			return nil
 		}
@@ -108,8 +123,9 @@ func (bM BuyingMode) validate() error {
 }
 
 func NewProduct(
-	title, categoryId, condition, buyingMode string,
-	price, float64,
+	title, condition, buyingMode, listingTypeId string,
+	categoryId CategoryId,
+	price float64,
 	stock int,
 	picsSrcs []string,
 ) (*Product, error) {
@@ -118,27 +134,61 @@ func NewProduct(
 		pics = append(pics, &Picture{Source: src})
 	}
 	prod := &Product{
-		Title: title, CategoryId: CategoryId(categoryId), Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode),
+		Title: title, CategoryId: CategoryId(categoryId),
+		Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode), ListingTypeId: ListingTypeId(listingTypeId),
 		Price:             price,
 		AvailableQuantity: stock,
 		Pictures:          pics,
 	}
-	err := prod.validate()
+	err := prod.validate(false)
 	if err != nil {
 		return nil, err
 	}
 	return prod, nil
 }
 
-func (prod *Product) validate() error {
+func NewExistantProduct(
+	title, condition, buyingMode, listingTypeId string,
+	categoryId CategoryId,
+	price float64,
+	stock int,
+	picsSrcs []string,
+) (*Product, error) {
+	var pics []*Picture
+	for _, src := range picsSrcs {
+		pics = append(pics, &Picture{Source: src})
+	}
+	prod := &Product{
+		Title: title, CategoryId: CategoryId(categoryId),
+		Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode), ListingTypeId: ListingTypeId(listingTypeId),
+		Price:             price,
+		AvailableQuantity: stock,
+		Pictures:          pics,
+	}
+	err := prod.validate(true)
+	if err != nil {
+		return nil, err
+	}
+	return prod, nil
+}
+
+func (prod *Product) validate(exists bool) error {
+	if len(prod.CategoryId) > 0 && len(prod.CategoryId) < 4 {
+		return errInvalidCategoryId
+	}
+
+	if prod.Price == 0 {
+		return errNilPrice
+	}
+	if exists {
+		return nil
+	}
+
 	if prod.Title == "" {
 		return errNilProductTitle
 	}
-	if prod.CategoryId == "" {
+	if len(prod.CategoryId) < 4 {
 		return errNilCategoryId
-	}
-	if prod.Price == 0 {
-		return errNilPrice
 	}
 	if prod.AvailableQuantity == 0 {
 		return errNilStock
@@ -149,10 +199,20 @@ func (prod *Product) validate() error {
 	if err := prod.BuyingMode.validate(); err != nil {
 		return err
 	}
+	if err := prod.ListingTypeId.validate(prod.site()); err != nil {
+		return err
+	}
 	if prod.Pictures == nil {
 		return errNilPictures
 	}
 	return nil
+}
+
+func (prod *Product) site() SiteId {
+	if len(prod.CategoryId) < 3 {
+		return ""
+	}
+	return SiteId(prod.CategoryId[0:2])
 }
 
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
@@ -268,7 +328,7 @@ func (p *Product) Delete() {
 }
 
 func (p *Product) AddVariant(v *Variant) error {
-	err := v.validate()
+	err := v.validate(v.Id == 0)
 	if err != nil {
 		return err
 	}
