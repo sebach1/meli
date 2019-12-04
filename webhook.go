@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type WebHook struct {
+type Webhook struct {
 	Resource      string `json:"resource,omitempty"`
 	UserId        int    `json:"user_id,omitempty"`
 	Topic         string `json:"topic,omitempty"`
@@ -16,11 +16,11 @@ type WebHook struct {
 	Received time.Time `json:"received,omitempty"`
 }
 
-func (ml *MeLi) ProcessProductWebHook(wh *WebHook) (*Product, error) {
+func (ml *MeLi) ProcessProductWebhook(wh *Webhook) (*Product, error) {
 	return ml.GetProduct(ProductId(wh.ResourceID()))
 }
 
-func (wh *WebHook) ResourceID() string {
+func (wh *Webhook) ResourceID() string {
 	if wh.Resource == "" {
 		return ""
 	}
