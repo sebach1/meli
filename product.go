@@ -84,7 +84,12 @@ type Product struct {
 	Subtitle                     string        `json:"subtitle,omitempty"`
 
 	Deleted bool `json:"deleted,omitempty"`
+
+	EndTime           time.Time `json:"end_time"`
+	ExpirationTime    time.Time `json:"expiration_time"`
+	SellerCustomField string    `json:"seller_custom_field"`
 }
+
 type Condition string
 
 func (c Condition) validate() error {
