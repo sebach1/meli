@@ -103,7 +103,7 @@ type ListingTypeId string
 // TODO: test with the api responses of https://api.mercadolibre.com/sites/{Site_id}/listing_types
 func (ltId ListingTypeId) validate(siteId SiteId) error {
 	validListingTypeIds := map[SiteId][]ListingTypeId{
-		"MLA": []ListingTypeId{"gold_pro", "gold_premium", "gold_special", "gold", "silver", "bronze", "free"},
+		"MLA": {"gold_pro", "gold_premium", "gold_special", "gold", "silver", "bronze", "free"},
 	}
 	for _, validLtId := range validListingTypeIds[siteId] {
 		if ltId == validLtId {
@@ -134,7 +134,7 @@ func NewProduct(
 		pics = append(pics, &Picture{Source: src})
 	}
 	prod := &Product{
-		Title: title, CategoryId: CategoryId(categoryId),
+		Title: title, CategoryId: categoryId,
 		Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode), ListingTypeId: ListingTypeId(listingTypeId),
 		Price:             price,
 		AvailableQuantity: stock,
@@ -159,7 +159,7 @@ func NewExistantProduct(
 		pics = append(pics, &Picture{Source: src})
 	}
 	prod := &Product{
-		Title: title, CategoryId: CategoryId(categoryId),
+		Title: title, CategoryId: categoryId,
 		Condition: Condition(condition), BuyingMode: BuyingMode(buyingMode), ListingTypeId: ListingTypeId(listingTypeId),
 		Price:             price,
 		AvailableQuantity: stock,
