@@ -21,9 +21,9 @@ func (ml *MeLi) ProcessProductWebhook(wh *Webhook) (*Product, error) {
 }
 
 func (wh *Webhook) ResourceID() string {
-	if wh.Resource == "" {
+	idx := strings.LastIndex(wh.Resource, "/")
+	if idx == -1 {
 		return ""
 	}
-	idx := strings.LastIndex(wh.Resource, "/")
 	return wh.Resource[0:idx]
 }

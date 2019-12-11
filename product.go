@@ -22,9 +22,9 @@ type Product struct {
 	BasePrice  int     `json:"base_price,omitempty"`
 	CurrencyId string  `json:"currency_id,omitempty"`
 
-	AvailableQuantity int `json:"available_quantity,omitempty"`
-	InitialQuantity   int `json:"initial_quantity,omitempty"`
-	SoldQuantity      int `json:"sold_quantity,omitempty"`
+	AvailableQuantity *int `json:"available_quantity,omitempty"`
+	InitialQuantity   int  `json:"initial_quantity,omitempty"`
+	SoldQuantity      int  `json:"sold_quantity,omitempty"`
 	//
 	BuyingMode      BuyingMode `json:"buying_mode,omitempty"`
 	Condition       Condition  `json:"condition,omitempty"`
@@ -131,7 +131,7 @@ func NewProduct(
 	title, condition, buyingMode, listingTypeId string,
 	categoryId CategoryId,
 	price float64,
-	stock int,
+	stock *int,
 	picsSrcs []string,
 ) (*Product, error) {
 	var pics []*Picture
@@ -156,7 +156,7 @@ func NewExistantProduct(
 	title, condition, buyingMode, listingTypeId string,
 	categoryId CategoryId,
 	price float64,
-	stock int,
+	stock *int,
 	picsSrcs []string,
 ) (*Product, error) {
 	var pics []*Picture
@@ -195,7 +195,7 @@ func (prod *Product) validate(exists bool) error {
 	if len(prod.CategoryId) < 4 {
 		return errNilCategoryId
 	}
-	if prod.AvailableQuantity == 0 {
+	if prod.AvailableQuantity == nil {
 		return errNilStock
 	}
 	if err := prod.Condition.validate(); err != nil {
@@ -325,7 +325,11 @@ func (ml *MeLi) updateProduct(prod *Product) (*Product, error) {
 // ManageStock adds to the product's stock the given stock.
 // In case of giving a negative number, it rests the stock
 func (p *Product) ManageStock(stock int) {
-	p.AvailableQuantity += stock
+	if p.AvailableQuantity == nil {
+		p.AvailableQuantity = &stock
+		return
+	}
+	*p.AvailableQuantity += stock
 }
 
 func (p *Product) Delete() {
@@ -333,9 +337,11 @@ func (p *Product) Delete() {
 }
 
 func (p *Product) AddVariant(v *Variant) error {
-	err := v.validate(v.Id == 0)
-	if err != nil {
-		return err
+	if exists := v.Id > 0; !exists {
+		err := v.validate()
+		if err != nil {
+			return err
+		}
 	}
 	if !p.varIsCompatible(v) {
 		return errIncompatibleVar
