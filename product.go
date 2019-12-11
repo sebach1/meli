@@ -19,7 +19,7 @@ type Product struct {
 	OfficialStoreId int        `json:"official_store_id,omitempty"`
 
 	Price      float64 `json:"price,omitempty"`
-	BasePrice  int     `json:"base_price,omitempty"`
+	BasePrice  float64 `json:"base_price,omitempty"`
 	CurrencyId string  `json:"currency_id,omitempty"`
 
 	AvailableQuantity *int `json:"available_quantity,omitempty"`
@@ -221,7 +221,11 @@ func (prod *Product) site() SiteId {
 }
 
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
-	URL, err := ml.RouteTo("/items/%v", nil, prodId)
+	params, err := ml.paramsWithToken()
+	if err != nil {
+		return nil, err
+	}
+	URL, err := ml.RouteTo("/items/%v", params, prodId)
 	if err != nil {
 		return nil, err
 	}
@@ -241,6 +245,22 @@ func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 	return prod, nil
 }
 
+func (ml *MeLi) DeleteProduct(id ProductId) (*Product, error) {
+	prod := &Product{Id: id}
+	prod.Close()
+	prod, err := ml.updateProduct(prod)
+	if err != nil {
+		return nil, err
+	}
+	time.Sleep(1 * time.Second)
+	prod.Delete()
+	return ml.updateProduct(prod)
+}
+
+func (prod *Product) Close() {
+	prod.Status = "closed"
+}
+
 func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	if prod == nil {
 		return nil, errNilProduct
@@ -252,13 +272,6 @@ func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	}
 	return
 }
-
-func (ml *MeLi) DeleteProduct(id ProductId) (*Product, error) {
-	prod := &Product{Id: id}
-	prod.Delete()
-	return ml.updateProduct(prod)
-}
-
 func (ml *MeLi) createProduct(prod *Product) (*Product, error) {
 	params, err := ml.paramsWithToken()
 	if err != nil {
