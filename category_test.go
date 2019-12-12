@@ -30,6 +30,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
 			stub: &httpstub.Stub{Status: 404,
+				URL:  "/categories/foo/attributes",
 				Body: svErrFooBar,
 			},
 		},
@@ -37,6 +38,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
 			stub: &httpstub.Stub{Status: 200,
+				URL: "/categories/foo/attributes",
 				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux"},
@@ -91,6 +93,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
 			stub: &httpstub.Stub{Status: 404,
+				URL:  "/categories/foo/attributes",
 				Body: svErrFooBar,
 			},
 		},
@@ -98,6 +101,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
 			stub: &httpstub.Stub{Status: 200,
+				URL: "/categories/foo/attributes",
 				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux", Tags: []Tag{{"allow_variations": true}}},

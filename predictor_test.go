@@ -26,6 +26,7 @@ func TestMeLi_Classify(t *testing.T) {
 			wantErr: nil,
 			args:    args{title: "quux"},
 			stub: &httpstub.Stub{Status: 200,
+				URL:  "/sites/MLA/categories/category_predictor/predict",
 				Body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
 				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
@@ -38,6 +39,7 @@ func TestMeLi_Classify(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{title: "quux"},
 			stub: &httpstub.Stub{Status: 400,
+				URL:  "/sites/MLA/categories/category_predictor/predict",
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
@@ -84,6 +86,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			wantErr: nil,
 			args:    args{titles: []string{"a", "b"}},
 			stub: &httpstub.Stub{Status: 200,
+				URL: "/sites/MLA/categories/category_predictor/predict",
 				Body: []*Category{
 					{Id: "foo", PredictionProbability: 1, Name: "bar"},
 					{Id: "baz", PredictionProbability: 1, Name: "quux"},
@@ -102,6 +105,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{titles: []string{}},
 			stub: &httpstub.Stub{Status: 400,
+				URL:             "/sites/MLA/categories/category_predictor/predict",
 				Body:            svErrFooBar,
 				WantBodyReceive: JSONMarshal(t, []string{}),
 			},

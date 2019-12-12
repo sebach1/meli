@@ -28,6 +28,7 @@ func TestMeLi_GetProduct(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{id: "foo"},
 			stub: &httpstub.Stub{Status: 404,
+				URL:  "/items/foo",
 				Body: svErrFooBar,
 			},
 		},
@@ -37,6 +38,7 @@ func TestMeLi_GetProduct(t *testing.T) {
 			wantProd: gProducts.Bar.None,
 			args:     args{id: "foo"},
 			stub: &httpstub.Stub{Status: 200,
+				URL:  "/items/foo",
 				Body: gProducts.Bar.None,
 			},
 		},
@@ -94,6 +96,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:     gProducts.Foo.None.copy(t),
 			wantProd: gProducts.Foo.Title.Alt.copy(t),
 			stub: &httpstub.Stub{Status: 200,
+				URL:             "/items/" + string(gProducts.Foo.None.Id),
 				WantBodyReceive: JSONMarshal(t, gProducts.Foo.Id.Zero), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -107,6 +110,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:     gProducts.Bar.Id.Zero.copy(t),
 			wantProd: gProducts.Bar.None.copy(t),
 			stub: &httpstub.Stub{Status: 200,
+				URL:             "/items/",
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -120,6 +124,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:    gProducts.Bar.Id.Zero.copy(t),
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 400,
+				URL:             "/items/",
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -133,6 +138,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:    gProducts.Bar.None.copy(t),
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 400,
+				URL:             "/items/" + string(gProducts.Bar.None.Id),
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},

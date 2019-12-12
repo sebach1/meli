@@ -47,6 +47,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 404,
+				URL:  "/oauth/token",
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
@@ -61,6 +62,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: errRemoteInconsistency,
 			stub: &httpstub.Stub{Status: 200,
+				URL:  "/oauth/token",
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
@@ -76,6 +78,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			wantAccessToken:  "qux",
 			wantRefreshToken: "quux",
 			stub: &httpstub.Stub{Status: 200,
+				URL:  "/oauth/token",
 				Body: &authBody{AccessToken: "qux", RefreshToken: "quux"},
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
