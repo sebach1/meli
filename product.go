@@ -231,7 +231,7 @@ type ProductEdge struct {
 		Total  int `json:"total"`
 	} `json:"paging"`
 	Results  []ProductId `json:"results"`
-	ScrollId string      `json:"scroll_id`
+	ScrollId string      `json:"scroll_id"`
 	Orders   []struct {
 		Id   string `json:"id"`
 		Name string `json:"name"`
@@ -280,6 +280,9 @@ func (ml *MeLi) GetProducts(ids []ProductId) ([]*Product, error) {
 		return nil, errInvalidMultigetQuantity
 	}
 	params, err := ml.paramsWithToken()
+	if err != nil {
+		params = nil // retrieve public product in case of not having credentials
+	}
 
 	params.Set("ids", csvProductIds(ids))
 
@@ -296,7 +299,7 @@ func (ml *MeLi) GetProducts(ids []ProductId) ([]*Product, error) {
 		return nil, errFromReader(resp.Body)
 	}
 	var prods []*Product
-	err = json.NewDecoder(resp.Body).Decode(prods)
+	err = json.NewDecoder(resp.Body).Decode(&prods)
 	if err != nil {
 		return nil, err
 	}
