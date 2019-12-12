@@ -15,7 +15,7 @@ type authBody struct {
 }
 
 func (ml *MeLi) RefreshToken() error {
-	err := ml.Credentials.validate()
+	err := ml.Credentials.validateClient()
 	if err != nil {
 		return err
 	}
@@ -36,6 +36,46 @@ func (ml *MeLi) RefreshToken() error {
 	if resp.StatusCode >= 400 {
 		return errFromReader(resp.Body)
 	}
+	body := &authBody{}
+	err = json.NewDecoder(resp.Body).Decode(body)
+	if err != nil {
+		return err
+	}
+
+	if body.AccessToken == "" || body.RefreshToken == "" {
+		return errRemoteInconsistency
+	}
+	ml.Credentials.Access = body.AccessToken
+	ml.Credentials.Refresh = body.RefreshToken
+	return nil
+}
+
+// curl -X POST https://api.mercadolibre.com/oauth/token?grant_type=authorization_code
+// &client_id=$APP_ID&client_secret=$SECRET_KEY&code=$SERVER_GENERATED_AUTHORIZATION_CODE&redirect_uri=$REDIRECT_URI
+
+func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
+	err := ml.Credentials.validateServer()
+	if err != nil {
+		return err
+	}
+	params := url.Values{}
+	params.Set("code", code)
+	params.Set("client_id", string(ml.Credentials.ApplicationId))
+	params.Set("client_secret", string(ml.Credentials.Secret))
+	params.Set("redirect_uri", redirectURI)
+	URL, err := ml.RouteTo("/oauth/token", params)
+	if err != nil {
+		return err
+	}
+	resp, err := ml.Post(URL, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return errFromReader(resp.Body)
+	}
+
 	body := &authBody{}
 	err = json.NewDecoder(resp.Body).Decode(body)
 	if err != nil {

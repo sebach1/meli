@@ -13,18 +13,25 @@ type creds struct {
 	Secret        token
 }
 
-func (c *creds) validate() error {
-	if c.ApplicationId == "" {
-		return errNilApplicationId
-	}
-	if c.Secret == "" {
-		return errNilSecret
+func (c *creds) validateClient() error {
+	if err := c.validateServer(); err != nil {
+		return err
 	}
 	if c.Refresh == "" {
 		return errNilRefreshToken
 	}
 	if c.Access == "" {
 		return errNilAccessToken
+	}
+	return nil
+}
+
+func (c *creds) validateServer() error {
+	if c.ApplicationId == "" {
+		return errNilApplicationId
+	}
+	if c.Secret == "" {
+		return errNilSecret
 	}
 	return nil
 }
