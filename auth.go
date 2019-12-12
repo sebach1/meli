@@ -49,3 +49,13 @@ func (ml *MeLi) RefreshToken() error {
 	ml.Credentials.Refresh = body.RefreshToken
 	return nil
 }
+
+func (ml *MeLi) GetAuthURL(site SiteId) (string, error) {
+	if ml.Credentials.ApplicationId == "" {
+		return "", errNilApplicationId
+	}
+	params := url.Values{}
+	params.Set("response_type", "code")
+	params.Set("client_id", string(ml.Credentials.ApplicationId))
+	return ml.AuthRouteTo("authorization", params, site)
+}

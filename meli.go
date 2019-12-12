@@ -2,6 +2,7 @@ package meli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,6 +36,38 @@ func (ml *MeLi) SetAndValidateCredentials(ctx context.Context, access, refresh, 
 	}
 	return ml.RefreshToken()
 }
+
+func (ml *MeLi) AuthRouteTo(path string, params url.Values, site SiteId) (string, error) {
+	urls := map[SiteId]string{
+		"MLA": "https://auth.mercadolibre.com.ar",
+		"MLB": "https://auth.mercadolivre.com.br",
+		"MCO": "https://auth.mercadolibre.com.co",
+		"MCR": "https://auth.mercadolibre.com.cr",
+		"MEC": "https://auth.mercadolibre.com.ec",
+		"MLC": "https://auth.mercadolibre.cl",
+		"MLM": "https://auth.mercadolibre.com.mx",
+		"MLU": "https://auth.mercadolibre.com.uy",
+		"MLV": "https://auth.mercadolibre.com.ve",
+		"MPA": "https://auth.mercadolibre.com.pa",
+		"MPE": "https://auth.mercadolibre.com.pe",
+		"MPT": "https://auth.mercadolivre.pt",
+		"MRD": "https://auth.mercadolibre.com.do",
+	}
+	base, ok := urls[site]
+	if !ok {
+		return "", errInvalidSiteId
+	}
+	URL, err := url.Parse(base)
+	if err != nil {
+		return "", err
+	}
+	URL.RawQuery = params.Encode()
+	base = URL.String()
+
+	return base, nil
+}
+
+var errInvalidSiteId = errors.New("the given siteId does not exists")
 
 // RouteTo retrieves a route given a path alias to the desired resource
 // Notice: it returns a trailing slash on the return value in case it can contain childs.
