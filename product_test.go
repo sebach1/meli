@@ -68,7 +68,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name     string
-		creds    creds
+		creds    *creds
 		prod     *Product
 		stub     *httpstub.Stub
 		wantProd *Product
@@ -172,7 +172,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name    string
-		creds   creds
+		creds   *creds
 		prod    *Product
 		stub    *httpstub.Stub
 		wantErr error
