@@ -13,7 +13,7 @@ import (
 type MeLi struct {
 	http.Client
 
-	Credentials creds
+	creds *creds
 }
 
 func (ml *MeLi) SetClient(c http.Client) {
@@ -21,19 +21,19 @@ func (ml *MeLi) SetClient(c http.Client) {
 }
 
 func (ml *MeLi) SetServerCredentials(ctx context.Context, appId, secret string) error {
-	var creds creds
-	creds.Secret = token(secret)
-	creds.ApplicationId = applicationId(appId)
-	return creds.validateServer()
+	ml.creds = &creds{}
+	ml.creds.Secret = token(secret)
+	ml.creds.ApplicationId = applicationId(appId)
+	return ml.creds.validateServer()
 }
 
 func (ml *MeLi) SetCredentials(ctx context.Context, access, refresh, appId, secret string) error {
-	var creds creds
-	creds.Access = accessToken(access)
-	creds.Refresh = refreshToken(refresh)
-	creds.Secret = token(secret)
-	creds.ApplicationId = applicationId(appId)
-	return creds.validateClient()
+	ml.creds = &creds{}
+	ml.creds.Access = accessToken(access)
+	ml.creds.Refresh = refreshToken(refresh)
+	ml.creds.Secret = token(secret)
+	ml.creds.ApplicationId = applicationId(appId)
+	return ml.creds.validateClient()
 }
 
 func (ml *MeLi) SetAndValidateCredentials(ctx context.Context, access, refresh, appId, secret string) error {
@@ -97,11 +97,11 @@ func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (str
 }
 
 func (ml *MeLi) paramsWithToken() (url.Values, error) {
-	if ml.Credentials.Access == "" {
+	if ml.creds.Access == "" {
 		return nil, errNilAccessToken
 	}
 	params := url.Values{}
-	params.Set("access_token", string(ml.Credentials.Access))
+	params.Set("access_token", string(ml.creds.Access))
 	return params, nil
 }
 

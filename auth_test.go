@@ -12,7 +12,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name             string
-		creds            creds
+		creds            *creds
 		wantErr          error
 		stub             *httpstub.Stub
 		wantAccessToken  accessToken
@@ -24,27 +24,27 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		},
 		{
 			name:    "but NO APP Id",
-			creds:   creds{Access: "foo", Refresh: "bar", Secret: "baz"},
+			creds:   &creds{Access: "foo", Refresh: "bar", Secret: "baz"},
 			wantErr: errNilApplicationId,
 		},
 		{
 			name:    "but NO SECRET",
-			creds:   creds{Access: "foo", Refresh: "bar", ApplicationId: "baz"},
+			creds:   &creds{Access: "foo", Refresh: "bar", ApplicationId: "baz"},
 			wantErr: errNilSecret,
 		},
 		{
 			name:    "but NO ACCESS",
-			creds:   creds{Refresh: "bar", ApplicationId: "baz", Secret: "foo"},
+			creds:   &creds{Refresh: "bar", ApplicationId: "baz", Secret: "foo"},
 			wantErr: errNilAccessToken,
 		},
 		{
 			name:    "but NO REFRESH",
-			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo"},
+			creds:   &creds{Access: "bar", ApplicationId: "baz", Secret: "foo"},
 			wantErr: errNilRefreshToken,
 		},
 		{
 			name:    "REMOTE returns an ERR",
-			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
+			creds:   &creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 404,
 				URL:  "/oauth/token",
@@ -59,7 +59,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		},
 		{
 			name:    "REMOTE returns an INCONSISTENCY",
-			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
+			creds:   &creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: errRemoteInconsistency,
 			stub: &httpstub.Stub{Status: 200,
 				URL:  "/oauth/token",
@@ -74,7 +74,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		},
 		{
 			name:             "REMOTE returns CORRECTLY",
-			creds:            creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
+			creds:            &creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantAccessToken:  "qux",
 			wantRefreshToken: "quux",
 			stub: &httpstub.Stub{Status: 200,
@@ -93,26 +93,26 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			ml := &MeLi{Credentials: tt.creds}
+			ml := &MeLi{creds: tt.creds}
 			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
 			cleanup := stubber.Serve(t)
 			defer cleanup()
 
-			oldAccessToken, oldRefreshToken := ml.Credentials.Access, ml.Credentials.Refresh
+			oldAccessToken, oldRefreshToken := ml.creds.Access, ml.creds.Refresh
 			err := ml.RefreshToken()
 			if fmt.Sprintf("%v", tt.wantErr) != fmt.Sprintf("%v", err) {
 				t.Errorf("MeLi.RefreshToken() error got = %v, want: %v", err, tt.wantErr)
 			}
 
 			if err != nil {
-				if oldAccessToken != ml.Credentials.Access || oldRefreshToken != ml.Credentials.Refresh {
+				if oldAccessToken != ml.creds.Access || oldRefreshToken != ml.creds.Refresh {
 					t.Errorf("MeLi.RefreshToken() ASSIGNED a new TOKEN on err")
 				}
 				return
 			}
 
-			if tt.wantAccessToken != ml.Credentials.Access {
-				t.Errorf("MeLi.RefreshToken() assign mismatch, got: %v, want: %v", ml.Credentials.Access, tt.wantAccessToken)
+			if tt.wantAccessToken != ml.creds.Access {
+				t.Errorf("MeLi.RefreshToken() assign mismatch, got: %v, want: %v", ml.creds.Access, tt.wantAccessToken)
 			}
 		})
 	}

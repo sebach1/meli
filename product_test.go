@@ -77,19 +77,19 @@ func TestMeLi_SetProduct(t *testing.T) {
 		{
 			name:    "but given NIL PRODUCT",
 			wantErr: errNilProduct,
-			creds:   creds{Access: "baz"},
+			creds:   &creds{Access: "baz"},
 		},
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
 			prod:    gProducts.Foo.None,
-			creds:   creds{},
+			creds:   &creds{},
 		},
 		{
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
 			prod:    gProducts.Foo.None.copy(t),
-			creds:   creds{},
+			creds:   &creds{},
 		},
 		{
 			name:     "while EDITing product REMOTE returns CORRECTly",
@@ -103,7 +103,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 				},
 				Body: gProducts.Foo.Title.Alt,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 		{
 			name:     "while CREATing product, REMOTE returns CORRECTly",
@@ -117,7 +117,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 				},
 				Body: gProducts.Bar.None,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 		{
 			name:    "while CREATing product, REMOTE returns ERRored",
@@ -131,7 +131,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 				},
 				Body: svErrFooBar,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 		{
 			name:    "while EDITing product, REMOTE returns an ERROR",
@@ -145,14 +145,14 @@ func TestMeLi_SetProduct(t *testing.T) {
 				},
 				Body: svErrFooBar,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			ml := &MeLi{Credentials: tt.creds}
+			ml := &MeLi{creds: tt.creds}
 			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
 			cleanup := stubber.Serve(t)
 			defer cleanup()
@@ -181,7 +181,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			name:    "but given NIL CREDENTIALS",
 			wantErr: errNilAccessToken,
 			prod:    gProducts.Foo.None.copy(t),
-			creds:   creds{},
+			creds:   &creds{},
 		},
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
@@ -193,7 +193,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 				},
 				Body: gProducts.Foo.None,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 		{
 			name:    "while EDITing product, REMOTE returns an ERROR",
@@ -206,14 +206,14 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 				},
 				Body: svErrFooBar,
 			},
-			creds: creds{Access: "baz"},
+			creds: &creds{Access: "baz"},
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			ml := &MeLi{Credentials: tt.creds}
+			ml := &MeLi{creds: tt.creds}
 			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
 			cleanup := stubber.Serve(t)
 			defer cleanup()

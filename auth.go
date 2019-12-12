@@ -15,15 +15,15 @@ type authBody struct {
 }
 
 func (ml *MeLi) RefreshToken() error {
-	err := ml.Credentials.validateClient()
+	err := ml.creds.validateClient()
 	if err != nil {
 		return err
 	}
 	params := url.Values{}
 	params.Set("grant_type", "refresh_token")
-	params.Set("refresh_token", string(ml.Credentials.Refresh))
-	params.Set("client_id", string(ml.Credentials.ApplicationId))
-	params.Set("client_secret", string(ml.Credentials.Secret))
+	params.Set("refresh_token", string(ml.creds.Refresh))
+	params.Set("client_id", string(ml.creds.ApplicationId))
+	params.Set("client_secret", string(ml.creds.Secret))
 	URL, err := ml.RouteTo("/oauth/token", params)
 	if err != nil {
 		return err
@@ -45,23 +45,20 @@ func (ml *MeLi) RefreshToken() error {
 	if body.AccessToken == "" || body.RefreshToken == "" {
 		return errRemoteInconsistency
 	}
-	ml.Credentials.Access = body.AccessToken
-	ml.Credentials.Refresh = body.RefreshToken
+	ml.creds.Access = body.AccessToken
+	ml.creds.Refresh = body.RefreshToken
 	return nil
 }
 
-// curl -X POST https://api.mercadolibre.com/oauth/token?grant_type=authorization_code
-// &client_id=$APP_ID&client_secret=$SECRET_KEY&code=$SERVER_GENERATED_AUTHORIZATION_CODE&redirect_uri=$REDIRECT_URI
-
 func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
-	err := ml.Credentials.validateServer()
+	err := ml.creds.validateServer()
 	if err != nil {
 		return err
 	}
 	params := url.Values{}
 	params.Set("code", code)
-	params.Set("client_id", string(ml.Credentials.ApplicationId))
-	params.Set("client_secret", string(ml.Credentials.Secret))
+	params.Set("client_id", string(ml.creds.ApplicationId))
+	params.Set("client_secret", string(ml.creds.Secret))
 	params.Set("redirect_uri", redirectURI)
 	URL, err := ml.RouteTo("/oauth/token", params)
 	if err != nil {
@@ -85,17 +82,17 @@ func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
 	if body.AccessToken == "" || body.RefreshToken == "" {
 		return errRemoteInconsistency
 	}
-	ml.Credentials.Access = body.AccessToken
-	ml.Credentials.Refresh = body.RefreshToken
+	ml.creds.Access = body.AccessToken
+	ml.creds.Refresh = body.RefreshToken
 	return nil
 }
 
 func (ml *MeLi) GetAuthURL(site SiteId) (string, error) {
-	if ml.Credentials.ApplicationId == "" {
+	if ml.creds.ApplicationId == "" {
 		return "", errNilApplicationId
 	}
 	params := url.Values{}
 	params.Set("response_type", "code")
-	params.Set("client_id", string(ml.Credentials.ApplicationId))
+	params.Set("client_id", string(ml.creds.ApplicationId))
 	return ml.AuthRouteTo("authorization", params, site)
 }
