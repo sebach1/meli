@@ -60,6 +60,7 @@ func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
 	params.Set("client_id", string(ml.creds.ApplicationId))
 	params.Set("client_secret", string(ml.creds.Secret))
 	params.Set("redirect_uri", redirectURI)
+	params.Set("grant_type", "authorization_code")
 	URL, err := ml.RouteTo("/oauth/token", params)
 	if err != nil {
 		return err
