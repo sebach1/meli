@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/sebach1/meli/melitest"
+	"github.com/sebach1/httpstub"
 )
 
 func TestMeLi_Classify(t *testing.T) {
@@ -17,7 +17,7 @@ func TestMeLi_Classify(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		stub    *melitest.Stub
+		stub    *httpstub.Stub
 		wantCat *Category
 		wantErr error
 	}{
@@ -25,7 +25,7 @@ func TestMeLi_Classify(t *testing.T) {
 			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{title: "quux"},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
 				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
@@ -37,7 +37,7 @@ func TestMeLi_Classify(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{title: "quux"},
-			stub: &melitest.Stub{Status: 400,
+			stub: &httpstub.Stub{Status: 400,
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"title": []string{"quux"},
@@ -50,8 +50,9 @@ func TestMeLi_Classify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			gotCat, err := ml.Classify(tt.args.title, "MLA")
 
@@ -74,7 +75,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		stub     *melitest.Stub
+		stub     *httpstub.Stub
 		wantCats []*Category
 		wantErr  error
 	}{
@@ -82,7 +83,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			name:    "correct behaviour",
 			wantErr: nil,
 			args:    args{titles: []string{"a", "b"}},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: []*Category{
 					{Id: "foo", PredictionProbability: 1, Name: "bar"},
 					{Id: "baz", PredictionProbability: 1, Name: "quux"},
@@ -100,7 +101,7 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			name:    "sends no body",
 			wantErr: svErrFooBar,
 			args:    args{titles: []string{}},
-			stub: &melitest.Stub{Status: 400,
+			stub: &httpstub.Stub{Status: 400,
 				Body:            svErrFooBar,
 				WantBodyReceive: JSONMarshal(t, []string{}),
 			},
@@ -112,8 +113,9 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			gotCats, err := ml.ClassifyBatch(tt.args.titles, "MLA")
 

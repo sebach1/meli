@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/sebach1/meli/melitest"
+	"github.com/sebach1/httpstub"
 )
 
 func TestMeLi_CategoryAttributes(t *testing.T) {
@@ -18,7 +18,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 		args    args
 		want    []*Attribute
 		wantErr error
-		stub    *melitest.Stub
+		stub    *httpstub.Stub
 	}{
 		{
 			name:    "NIL cat ID",
@@ -29,14 +29,14 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
-			stub: &melitest.Stub{Status: 404,
+			stub: &httpstub.Stub{Status: 404,
 				Body: svErrFooBar,
 			},
 		},
 		{
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux"},
@@ -53,8 +53,10 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			got, err := ml.CategoryAttributes(tt.args.catId)
 			if fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.wantErr) {
@@ -77,7 +79,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 		args    args
 		want    []*Attribute
 		wantErr error
-		stub    *melitest.Stub
+		stub    *httpstub.Stub
 	}{
 		{
 			name:    "NIL cat ID",
@@ -88,14 +90,14 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{catId: "foo"},
-			stub: &melitest.Stub{Status: 404,
+			stub: &httpstub.Stub{Status: 404,
 				Body: svErrFooBar,
 			},
 		},
 		{
 			name: "REMOTE returns CORRECTly",
 			args: args{catId: "foo"},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: []*Attribute{
 					{Id: "foo", Name: "bar"},
 					{Id: "baz", Name: "quux", Tags: []Tag{{"allow_variations": true}}},
@@ -109,8 +111,9 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			got, err := ml.CategoryVariableAttributes(tt.args.catId)
 			if fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.wantErr) {

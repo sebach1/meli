@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/sebach1/meli/melitest"
+	"github.com/sebach1/httpstub"
 )
 
 func TestMeLi_RefreshToken(t *testing.T) {
@@ -14,7 +14,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		name             string
 		creds            creds
 		wantErr          error
-		stub             *melitest.Stub
+		stub             *httpstub.Stub
 		wantAccessToken  accessToken
 		wantRefreshToken accessToken
 	}{
@@ -46,7 +46,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			name:    "REMOTE returns an ERR",
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: svErrFooBar,
-			stub: &melitest.Stub{Status: 404,
+			stub: &httpstub.Stub{Status: 404,
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
@@ -60,7 +60,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			name:    "REMOTE returns an INCONSISTENCY",
 			creds:   creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantErr: errRemoteInconsistency,
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: svErrFooBar,
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
@@ -75,7 +75,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			creds:            creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
 			wantAccessToken:  "qux",
 			wantRefreshToken: "quux",
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: &authBody{AccessToken: "qux", RefreshToken: "quux"},
 				WantParamsReceive: url.Values{
 					"grant_type":    []string{"refresh_token"},
@@ -91,9 +91,9 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{Credentials: tt.creds}
-
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			oldAccessToken, oldRefreshToken := ml.Credentials.Access, ml.Credentials.Refresh
 			err := ml.RefreshToken()

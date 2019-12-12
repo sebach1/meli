@@ -27,6 +27,12 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.3.2/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
+github.com/sebach1/httpstub v0.1.0 h1:HAR467SQ/vCVv5HWAqoF2VPwoRyCR+M3klq3cMnJ8GU=
+github.com/sebach1/httpstub v0.1.0/go.mod h1:7apC1GIsbDGvZeSe0ac2oRgo67gddjAGwvNjvZJZoEQ=
+github.com/sebach1/httpstub v0.1.1 h1:E0lArzAVxMgzoHMGkfsZp5vcmJXSoWyeAhzqySdTlx0=
+github.com/sebach1/httpstub v0.1.1/go.mod h1:7apC1GIsbDGvZeSe0ac2oRgo67gddjAGwvNjvZJZoEQ=
+github.com/sebach1/httpstub v0.1.2 h1:YsICMmQ+Ktok7oIrIiAnzfS3fBrJO1f6ET9hGEwSTHI=
+github.com/sebach1/httpstub v0.1.2/go.mod h1:EIxmk5Zol8OsnvuCXvfO5Nks2qVpSY+nI+QoYGcUTY0=
 github.com/sergi/go-diff v1.0.0 h1:Kpca3qRNrduNnOQeazBd0ysaKrUJiIuISHxogkT9RPQ=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

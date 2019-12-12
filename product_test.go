@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/mitchellh/copystructure"
-	"github.com/sebach1/meli/melitest"
+	"github.com/sebach1/httpstub"
 )
 
 func TestMeLi_GetProduct(t *testing.T) {
@@ -20,13 +20,14 @@ func TestMeLi_GetProduct(t *testing.T) {
 		args     args
 		wantProd *Product
 		wantErr  error
-		stub     *melitest.Stub
+		stub     *httpstub.Stub
 	}{
+
 		{
 			name:    "REMOTE returns an ERR",
 			wantErr: svErrFooBar,
 			args:    args{id: "foo"},
-			stub: &melitest.Stub{Status: 404,
+			stub: &httpstub.Stub{Status: 404,
 				Body: svErrFooBar,
 			},
 		},
@@ -35,7 +36,7 @@ func TestMeLi_GetProduct(t *testing.T) {
 			wantErr:  nil,
 			wantProd: gProducts.Bar.None,
 			args:     args{id: "foo"},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: gProducts.Bar.None,
 			},
 		},
@@ -45,8 +46,9 @@ func TestMeLi_GetProduct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			gotProd, err := ml.GetProduct(tt.args.id)
 
@@ -66,7 +68,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 		name     string
 		creds    creds
 		prod     *Product
-		stub     *melitest.Stub
+		stub     *httpstub.Stub
 		wantProd *Product
 		wantErr  error
 	}{
@@ -91,7 +93,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:     "while EDITing product REMOTE returns CORRECTly",
 			prod:     gProducts.Foo.None.copy(t),
 			wantProd: gProducts.Foo.Title.Alt.copy(t),
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				WantBodyReceive: JSONMarshal(t, gProducts.Foo.Id.Zero), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -104,7 +106,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:     "while CREATing product, REMOTE returns CORRECTly",
 			prod:     gProducts.Bar.Id.Zero.copy(t),
 			wantProd: gProducts.Bar.None.copy(t),
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -117,7 +119,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:    "while CREATing product, REMOTE returns ERRored",
 			prod:    gProducts.Bar.Id.Zero.copy(t),
 			wantErr: svErrFooBar,
-			stub: &melitest.Stub{Status: 400,
+			stub: &httpstub.Stub{Status: 400,
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -130,7 +132,7 @@ func TestMeLi_SetProduct(t *testing.T) {
 			name:    "while EDITing product, REMOTE returns an ERROR",
 			prod:    gProducts.Bar.None.copy(t),
 			wantErr: svErrFooBar,
-			stub: &melitest.Stub{Status: 400,
+			stub: &httpstub.Stub{Status: 400,
 				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -145,8 +147,9 @@ func TestMeLi_SetProduct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{Credentials: tt.creds}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			gotProd, err := ml.SetProduct(tt.prod)
 			if fmt.Sprintf("%v", tt.wantErr) != fmt.Sprintf("%v", err) {
@@ -165,7 +168,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		name    string
 		creds   creds
 		prod    *Product
-		stub    *melitest.Stub
+		stub    *httpstub.Stub
 		wantErr error
 	}{
 		{
@@ -177,7 +180,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
 			prod: gProducts.Foo.None.copy(t),
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -190,7 +193,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			name:    "while EDITing product, REMOTE returns an ERROR",
 			prod:    gProducts.Foo.None.copy(t),
 			wantErr: svErrFooBar,
-			stub: &melitest.Stub{Status: 400,
+			stub: &httpstub.Stub{Status: 400,
 				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
 				WantParamsReceive: url.Values{
 					"access_token": []string{"baz"},
@@ -205,8 +208,9 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{Credentials: tt.creds}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			tt.prod.Delete()
 			updProd, updErr := ml.updateProduct(tt.prod)
@@ -239,14 +243,14 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 			name: "vars EXISTS",
 			prod: &Product{
 				Variants: []*Variant{
-					{Id: 1, AvailableQuantity: 2},
-					{Id: 5, AvailableQuantity: 10},
+					{Id: 1, AvailableQuantity: pointerToInt(2)},
+					{Id: 5, AvailableQuantity: pointerToInt(10)},
 				},
 			},
 			newProd: &Product{
 				Variants: []*Variant{
-					{Id: 1, AvailableQuantity: 1},
-					{Id: 5, AvailableQuantity: 12},
+					{Id: 1, AvailableQuantity: pointerToInt(1)},
+					{Id: 5, AvailableQuantity: pointerToInt(12)},
 				},
 			},
 			args: args{stockById: map[VariantId]int{1: -1, 5: 2}},
@@ -255,12 +259,12 @@ func TestProduct_ManageVarStocks(t *testing.T) {
 			name: "vars does NOT EXISTS",
 			prod: &Product{
 				Variants: []*Variant{
-					{Id: 5, AvailableQuantity: 10},
+					{Id: 5, AvailableQuantity: pointerToInt(10)},
 				},
 			},
 			newProd: &Product{
 				Variants: []*Variant{
-					{Id: 5, AvailableQuantity: 12},
+					{Id: 5, AvailableQuantity: pointerToInt(12)},
 				},
 			},
 			args: args{stockById: map[VariantId]int{1: -1, 5: 2}},
@@ -315,6 +319,8 @@ func TestProduct_RemoveCombination(t *testing.T) {
 		})
 	}
 }
+
+func (v *Variant) withoutId() *Variant { v.Id = 0; return v }
 
 func TestProduct_AddVariant(t *testing.T) {
 	t.Parallel()
@@ -421,9 +427,10 @@ func TestProduct_ManageStock(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			p := &Product{AvailableQuantity: tt.stockHave}
-			p.ManageStock(tt.stockArg)
-			if diff := cmp.Diff(tt.stockWant, p.AvailableQuantity); diff != "" {
+			stockHave, stockArg, stockWant := pointerToInt(tt.stockHave), pointerToInt(tt.stockArg), pointerToInt(tt.stockWant)
+			p := &Product{AvailableQuantity: stockHave}
+			p.ManageStock(*stockArg)
+			if diff := cmp.Diff(stockWant, p.AvailableQuantity); diff != "" {
 				t.Errorf("Product.ManageStock() mismatch (-want +got): %s", diff)
 			}
 		})
@@ -496,3 +503,7 @@ func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
 // 	mod(prod)
 // 	return prod
 // }
+
+func pointerToInt(integer int) *int {
+	return &integer
+}

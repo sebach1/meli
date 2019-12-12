@@ -223,7 +223,7 @@ func (prod *Product) site() SiteId {
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 	params, err := ml.paramsWithToken()
 	if err != nil {
-		return nil, err
+		params = nil // retrieve public product in case of not having credentials
 	}
 	URL, err := ml.RouteTo("/items/%v", params, prodId)
 	if err != nil {
@@ -350,11 +350,9 @@ func (p *Product) Delete() {
 }
 
 func (p *Product) AddVariant(v *Variant) error {
-	if exists := v.Id > 0; !exists {
-		err := v.validate()
-		if err != nil {
-			return err
-		}
+	err := v.validate()
+	if err != nil {
+		return err
 	}
 	if !p.varIsCompatible(v) {
 		return errIncompatibleVar

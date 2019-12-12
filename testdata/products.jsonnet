@@ -26,7 +26,7 @@ local mkOpts(base, altOpt, k, v) = {
     category_id: mkOpts(base, altOpt, 'category_id', ''),
     variations: mkOpts(base, altOpt, 'variations', []),
     title: mkOpts(base, altOpt, 'title', ''),
-    available_quantity: mkOpts(base, altOpt, 'available_quantity', 0),
+    available_quantity: mkOpts(base, altOpt, 'available_quantity', null),
     price: mkOpts(base, altOpt, 'price', 0),
   },
 
@@ -47,7 +47,7 @@ local mkOpts(base, altOpt, k, v) = {
     category_id: mkOpts(base, altOpt, 'category_id', ''),
     variations: mkOpts(base, altOpt, 'variations', []),
     title: mkOpts(base, altOpt, 'title', ''),
-    available_quantity: mkOpts(base, altOpt, 'available_quantity', 0),
+    available_quantity: mkOpts(base, altOpt, 'available_quantity', null),
     price: mkOpts(base, altOpt, 'price', 0),
   },
   zero: {},

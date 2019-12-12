@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/mitchellh/copystructure"
-	"github.com/sebach1/meli/melitest"
+	"github.com/sebach1/httpstub"
 )
 
 func TestMeLi_GetVariant(t *testing.T) {
@@ -19,13 +19,13 @@ func TestMeLi_GetVariant(t *testing.T) {
 		args    args
 		wantVar *Variant
 		wantErr error
-		stub    *melitest.Stub
+		stub    *httpstub.Stub
 	}{
 		{
 			name:    "VAR is not in PROD",
 			wantErr: svErrFooBar,
 			args:    args{prodId: gProducts.Foo.None.Id, varId: gVariants.Bar.None.Id},
-			stub: &melitest.Stub{Status: 404,
+			stub: &httpstub.Stub{Status: 404,
 				Body: svErrFooBar,
 			},
 		},
@@ -34,7 +34,7 @@ func TestMeLi_GetVariant(t *testing.T) {
 			wantErr: nil,
 			wantVar: gVariants.Foo.None,
 			args:    args{prodId: gProducts.Foo.None.Id, varId: gVariants.Foo.None.Id},
-			stub: &melitest.Stub{Status: 200,
+			stub: &httpstub.Stub{Status: 200,
 				Body: gVariants.Foo.None,
 			},
 		},
@@ -47,8 +47,9 @@ func TestMeLi_GetVariant(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ml := &MeLi{}
-			svClose := tt.stub.Serve(t, ml)
-			defer svClose()
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			cleanup := stubber.Serve(t)
+			defer cleanup()
 
 			gotVar, err := ml.GetVariant(tt.args.varId, tt.args.prodId)
 
