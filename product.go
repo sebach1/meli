@@ -3,6 +3,8 @@ package meli
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"strings"
 	"sync"
 	"time"
 )
@@ -220,6 +222,133 @@ func (prod *Product) site() SiteId {
 	return SiteId(prod.CategoryId[0:2])
 }
 
+type ProductEdge struct {
+	SellerId string      `json:"seller_id"`
+	Query    interface{} `json:"query"`
+	Paging   struct {
+		Limit  int `json:"limit"`
+		Offset int `json:"offset"`
+		Total  int `json:"total"`
+	} `json:"paging"`
+	Results  []ProductId `json:"results"`
+	ScrollId string      `json:"scroll_id`
+	Orders   []struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"orders"`
+	AvailableOrders []struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"available_orders"`
+}
+
+func (ml *MeLi) FetchProducts() ([]*Product, error) {
+	prodIds, err := ml.ScanAllProducts()
+	if err != nil {
+		return nil, err
+	}
+	chunkedProdIds := chunkProductIds(prodIds, 20)
+	prodsChunksCh := make(chan []*Product)
+	errCh := make(chan error)
+	for _, chunk := range chunkedProdIds {
+		chunk := chunk
+		go func() {
+			prods, err := ml.GetProducts(chunk)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			prodsChunksCh <- prods
+		}()
+	}
+	var prods []*Product
+	for i := 0; i < len(chunkedProdIds); i++ {
+		select {
+		case prodsChunk := <-prodsChunksCh:
+			prods = append(prods, prodsChunk...)
+		case err := <-errCh:
+			return nil, err
+		}
+	}
+	return prods, nil
+}
+
+var errInvalidMultigetQuantity = errors.New("invalid quantity of elements for multiget request type")
+
+func (ml *MeLi) GetProducts(ids []ProductId) ([]*Product, error) {
+	if len(ids) > 20 {
+		return nil, errInvalidMultigetQuantity
+	}
+	params, err := ml.paramsWithToken()
+
+	params.Set("ids", csvProductIds(ids))
+
+	URL, err := ml.RouteTo("/items/%v", params)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ml.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, errFromReader(resp.Body)
+	}
+	var prods []*Product
+	err = json.NewDecoder(resp.Body).Decode(prods)
+	if err != nil {
+		return nil, err
+	}
+	return prods, nil
+}
+
+func (ml *MeLi) ScanAllProducts() ([]ProductId, error) {
+	var scrollId string
+	var prodIds []ProductId
+	for {
+		edge, err := ml.ScanProducts(scrollId)
+		if err != nil {
+			return nil, err
+		}
+		if len(edge.Results) == 0 {
+			break
+		}
+		prodIds = append(prodIds, edge.Results...)
+	}
+	return prodIds, nil
+}
+
+func (ml *MeLi) ScanProducts(scrollId string) (*ProductEdge, error) {
+	params, err := ml.paramsWithToken()
+	if err != nil {
+		return nil, err
+	}
+
+	params.Set("scroll_id", scrollId)
+	params.Set("status", "active")
+	params.Set("limit", "100")
+	params.Set("search_type", "scan")
+	URL, err := ml.RouteTo("/users/%v/items/search", params)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ml.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, errFromReader(resp.Body)
+	}
+	edge := &ProductEdge{}
+	err = json.NewDecoder(resp.Body).Decode(edge)
+	if err != nil {
+		return nil, err
+	}
+	return edge, nil
+}
+
 func (ml *MeLi) GetProduct(prodId ProductId) (*Product, error) {
 	params, err := ml.paramsWithToken()
 	if err != nil {
@@ -407,4 +536,24 @@ func (prod *Product) rmVariantByIdx(i int) {
 	prod.Variants[lastIndex] = nil // Notices the GC to rm the last elem to avoid mem-leak
 	prod.Variants = prod.Variants[:lastIndex]
 	lock.Unlock()
+}
+
+// Yes, it can be done wout wrapping out to do it O(n) but readability can be harm boi
+func chunkProductIds(prodIds []ProductId, sz int) (chunkedProdIds [][]ProductId) {
+	for i := 0; i < len(prodIds); i += sz {
+		end := i + sz
+		if end > len(prodIds) {
+			end = len(prodIds)
+		}
+		chunkedProdIds = append(chunkedProdIds, prodIds[i:end])
+	}
+	return
+}
+
+func csvProductIds(ids []ProductId) (csv string) {
+	for _, id := range ids {
+		csv += string(id)
+		csv += ","
+	}
+	return strings.TrimSuffix(csv, ",")
 }
