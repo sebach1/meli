@@ -20,7 +20,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 	}{
 		{
 			name:    "but NIL CREDS",
-			wantErr: errNilApplicationId,
+			wantErr: errNilCredentials,
 		},
 		{
 			name:    "but NO APP Id",
@@ -98,14 +98,21 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			cleanup := stubber.Serve(t)
 			defer cleanup()
 
-			oldAccessToken, oldRefreshToken := ml.creds.Access, ml.creds.Refresh
+			var oldAccessToken, newAccessToken accessToken
+			var oldRefreshToken, newRefreshToken refreshToken
+			if ml.creds != nil {
+				oldAccessToken, oldRefreshToken = ml.creds.Access, ml.creds.Refresh
+			}
 			err := ml.RefreshToken()
 			if fmt.Sprintf("%v", tt.wantErr) != fmt.Sprintf("%v", err) {
 				t.Errorf("MeLi.RefreshToken() error got = %v, want: %v", err, tt.wantErr)
 			}
 
+			if ml.creds != nil {
+				newAccessToken, newRefreshToken = ml.creds.Access, ml.creds.Refresh
+			}
 			if err != nil {
-				if oldAccessToken != ml.creds.Access || oldRefreshToken != ml.creds.Refresh {
+				if oldAccessToken != newAccessToken || oldRefreshToken != newRefreshToken {
 					t.Errorf("MeLi.RefreshToken() ASSIGNED a new TOKEN on err")
 				}
 				return

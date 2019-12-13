@@ -27,6 +27,9 @@ func (c *creds) validateClient() error {
 }
 
 func (c *creds) validateServer() error {
+	if c == nil {
+		return errNilCredentials
+	}
 	if c.ApplicationId == "" {
 		return errNilApplicationId
 	}
