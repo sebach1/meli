@@ -97,6 +97,9 @@ func (ml *MeLi) RouteTo(path string, params url.Values, ids ...interface{}) (str
 }
 
 func (ml *MeLi) paramsWithToken() (url.Values, error) {
+	if ml.creds == nil {
+		return nil, errNilCredentials
+	}
 	if ml.creds.Access == "" {
 		return nil, errNilAccessToken
 	}

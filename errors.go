@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	errNilApplicationId = errors.New("the APPLICATION Id is nil")
+	errNilCredentials   = errors.New("the CREDENTIALS are NIL")
+	errNilApplicationId = errors.New("the APPLICATION ID is NIL")
 	errNilAccessToken   = errors.New("the ACCESS TOKEN is NIL")
 	errNilRefreshToken  = errors.New("the REFRESH TOKEN is NIL")
 	errNilSecret        = errors.New("the SECRET is NIL")
