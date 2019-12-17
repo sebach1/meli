@@ -3,7 +3,6 @@ package meli
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"strings"
 	"sync"
 	"time"
@@ -90,6 +89,8 @@ type Product struct {
 	EndTime           time.Time `json:"end_time"`
 	ExpirationTime    time.Time `json:"expiration_time"`
 	SellerCustomField string    `json:"seller_custom_field"`
+
+	lock sync.Mutex
 }
 
 type Condition string
@@ -272,8 +273,6 @@ func (ml *MeLi) FetchProducts() ([]*Product, error) {
 	}
 	return prods, nil
 }
-
-var errInvalidMultigetQuantity = errors.New("invalid quantity of elements for multiget request type")
 
 func (ml *MeLi) GetProducts(ids []ProductId) ([]*Product, error) {
 	if len(ids) > 20 {
@@ -532,13 +531,12 @@ func (prod *Product) removeVariant(varId VariantId) (v *Variant) {
 }
 
 func (prod *Product) rmVariantByIdx(i int) {
-	var lock sync.Mutex // Avoid overlapping itself with a parallel call
-	lock.Lock()
+	prod.lock.Lock()
 	lastIndex := len(prod.Variants) - 1
 	prod.Variants[i] = prod.Variants[lastIndex]
 	prod.Variants[lastIndex] = nil // Notices the GC to rm the last elem to avoid mem-leak
 	prod.Variants = prod.Variants[:lastIndex]
-	lock.Unlock()
+	prod.lock.Unlock()
 }
 
 // Yes, it can be done wout wrapping out to do it O(n) but readability can be harm boi
