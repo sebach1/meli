@@ -39,6 +39,8 @@ var (
 	errIncompatibleVar = errors.New("the given VARIANT is INCOMPATIBLE")
 
 	errRemoteInconsistency = errors.New("the SERVER had an inconsistency while performing a request (status code != real behaviour)")
+
+	errInvalidMultigetQuantity = errors.New("invalid quantity of elements for multiget request type")
 )
 
 type Error struct {
