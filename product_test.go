@@ -96,10 +96,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:     gProducts.Foo.None.copy(t),
 			wantProd: gProducts.Foo.Title.Alt.copy(t),
 			stub: &httpstub.Stub{Status: 200,
-				URL:             "/items/" + string(gProducts.Foo.None.Id),
-				WantBodyReceive: JSONMarshal(t, gProducts.Foo.Id.Zero), // The body sent lacks of id since its in the route
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				URL: "/items/" + string(gProducts.Foo.None.Id),
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, gProducts.Foo.Id.Zero), // The body sent lacks of id since its in the route
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: gProducts.Foo.Title.Alt,
 			},
@@ -110,10 +112,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:     gProducts.Bar.Id.Zero.copy(t),
 			wantProd: gProducts.Bar.None.copy(t),
 			stub: &httpstub.Stub{Status: 200,
-				URL:             "/items/",
-				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				URL: "/items/",
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, gProducts.Bar.Id.Zero),
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: gProducts.Bar.None,
 			},
@@ -124,10 +128,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:    gProducts.Bar.Id.Zero.copy(t),
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 400,
-				URL:             "/items/",
-				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				URL: "/items/",
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, gProducts.Bar.Id.Zero),
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: svErrFooBar,
 			},
@@ -138,10 +144,12 @@ func TestMeLi_SetProduct(t *testing.T) {
 			prod:    gProducts.Bar.None.copy(t),
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 400,
-				URL:             "/items/" + string(gProducts.Bar.None.Id),
-				WantBodyReceive: JSONMarshal(t, gProducts.Bar.Id.Zero),
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				URL: "/items/" + string(gProducts.Bar.None.Id),
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, gProducts.Bar.Id.Zero),
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: svErrFooBar,
 			},
@@ -187,9 +195,11 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			name: "while EDITing product REMOTE returns CORRECTly",
 			prod: gProducts.Foo.None.copy(t),
 			stub: &httpstub.Stub{Status: 200,
-				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route,
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: gProducts.Foo.None,
 			},
@@ -200,9 +210,11 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			prod:    gProducts.Foo.None.copy(t),
 			wantErr: svErrFooBar,
 			stub: &httpstub.Stub{Status: 400,
-				WantBodyReceive: JSONMarshal(t, &Product{Deleted: true}),
-				WantParamsReceive: url.Values{
-					"access_token": []string{"baz"},
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t, &Product{Deleted: true}),
+					Params: url.Values{
+						"access_token": []string{"baz"},
+					},
 				},
 				Body: svErrFooBar,
 			},
@@ -214,7 +226,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{creds: tt.creds}
-			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stub}, Client: ml}
+			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stubs...}, Client: ml}
 			cleanup := stubber.Serve(t)
 			defer cleanup()
 

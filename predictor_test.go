@@ -28,8 +28,10 @@ func TestMeLi_Classify(t *testing.T) {
 			stub: &httpstub.Stub{Status: 200,
 				URL:  "/sites/MLA/categories/category_predictor/predict",
 				Body: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
-				WantParamsReceive: url.Values{
-					"title": []string{"quux"},
+				Receive: httpstub.Receive{
+					Params: url.Values{
+						"title": []string{"quux"},
+					},
 				},
 			},
 			wantCat: &Category{Id: "foo", PredictionProbability: 1, Name: "bar"},
@@ -41,8 +43,10 @@ func TestMeLi_Classify(t *testing.T) {
 			stub: &httpstub.Stub{Status: 400,
 				URL:  "/sites/MLA/categories/category_predictor/predict",
 				Body: svErrFooBar,
-				WantParamsReceive: url.Values{
-					"title": []string{"quux"},
+				Receive: httpstub.Receive{
+					Params: url.Values{
+						"title": []string{"quux"},
+					},
 				},
 			},
 		},
@@ -91,9 +95,11 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 					{Id: "foo", PredictionProbability: 1, Name: "bar"},
 					{Id: "baz", PredictionProbability: 1, Name: "quux"},
 				},
-				WantBodyReceive: JSONMarshal(t,
-					[]map[string]string{{"title": "a"}, {"title": "b"}},
-				),
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t,
+						[]map[string]string{{"title": "a"}, {"title": "b"}},
+					),
+				},
 			},
 			wantCats: []*Category{
 				{Id: "foo", PredictionProbability: 1, Name: "bar"},
@@ -105,9 +111,13 @@ func TestMeLi_ClassifyBatch(t *testing.T) {
 			wantErr: svErrFooBar,
 			args:    args{titles: []string{}},
 			stub: &httpstub.Stub{Status: 400,
-				URL:             "/sites/MLA/categories/category_predictor/predict",
-				Body:            svErrFooBar,
-				WantBodyReceive: JSONMarshal(t, []string{}),
+				URL:  "/sites/MLA/categories/category_predictor/predict",
+				Body: svErrFooBar,
+				Receive: httpstub.Receive{
+					Body: JSONMarshal(t,
+						[]string{},
+					),
+				},
 			},
 			wantCats: nil,
 		},

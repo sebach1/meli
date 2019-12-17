@@ -49,11 +49,13 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			stub: &httpstub.Stub{Status: 404,
 				URL:  "/oauth/token",
 				Body: svErrFooBar,
-				WantParamsReceive: url.Values{
-					"grant_type":    []string{"refresh_token"},
-					"refresh_token": []string{"asd"},
-					"client_secret": []string{"foo"},
-					"client_id":     []string{"baz"},
+				Receive: httpstub.Receive{
+					Params: url.Values{
+						"grant_type":    []string{"refresh_token"},
+						"refresh_token": []string{"asd"},
+						"client_secret": []string{"foo"},
+						"client_id":     []string{"baz"},
+					},
 				},
 			},
 		},
@@ -64,11 +66,12 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			stub: &httpstub.Stub{Status: 200,
 				URL:  "/oauth/token",
 				Body: svErrFooBar,
-				WantParamsReceive: url.Values{
-					"grant_type":    []string{"refresh_token"},
-					"refresh_token": []string{"asd"},
-					"client_secret": []string{"foo"},
-					"client_id":     []string{"baz"},
+				Receive: httpstub.Receive{
+					Params: url.Values{
+						"grant_type":    []string{"refresh_token"},
+						"refresh_token": []string{"asd"},
+						"client_secret": []string{"foo"},
+						"client_id":     []string{"baz"}},
 				},
 			},
 		},
@@ -80,11 +83,13 @@ func TestMeLi_RefreshToken(t *testing.T) {
 			stub: &httpstub.Stub{Status: 200,
 				URL:  "/oauth/token",
 				Body: &authBody{AccessToken: "qux", RefreshToken: "quux"},
-				WantParamsReceive: url.Values{
-					"grant_type":    []string{"refresh_token"},
-					"refresh_token": []string{"asd"},
-					"client_secret": []string{"foo"},
-					"client_id":     []string{"baz"},
+				Receive: httpstub.Receive{
+					Params: url.Values{
+						"grant_type":    []string{"refresh_token"},
+						"refresh_token": []string{"asd"},
+						"client_secret": []string{"foo"},
+						"client_id":     []string{"baz"},
+					},
 				},
 			},
 		},
