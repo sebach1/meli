@@ -43,7 +43,7 @@ func (ml *MeLi) RefreshToken() error {
 	}
 
 	if body.AccessToken == "" || body.RefreshToken == "" {
-		return errRemoteInconsistency
+		return ErrRemoteInconsistency
 	}
 	ml.creds.Access = body.AccessToken
 	ml.creds.Refresh = body.RefreshToken
@@ -83,7 +83,7 @@ func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
 	}
 
 	if body.AccessToken == "" || body.RefreshToken == "" {
-		return errRemoteInconsistency
+		return ErrRemoteInconsistency
 	}
 	ml.creds.Access = body.AccessToken
 	ml.creds.Refresh = body.RefreshToken
@@ -92,7 +92,7 @@ func (ml *MeLi) SetCredentialsFromCode(code string, redirectURI string) error {
 
 func (ml *MeLi) GetAuthURL(site SiteId) (string, error) {
 	if ml.creds.ApplicationId == "" {
-		return "", errNilApplicationId
+		return "", ErrNilApplicationId
 	}
 	params := url.Values{}
 	params.Set("response_type", "code")

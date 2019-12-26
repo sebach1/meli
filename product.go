@@ -101,7 +101,7 @@ func (c Condition) validate() error {
 			return nil
 		}
 	}
-	return errInvalidCondition
+	return ErrInvalidCondition
 }
 
 type BuyingMode string
@@ -118,7 +118,7 @@ func (ltId ListingTypeId) validate(siteId SiteId) error {
 			return nil
 		}
 	}
-	return errInvalidListingTypeId
+	return ErrInvalidListingTypeId
 }
 
 func (bM BuyingMode) validate() error {
@@ -127,7 +127,7 @@ func (bM BuyingMode) validate() error {
 			return nil
 		}
 	}
-	return errInvalidBuyingMode
+	return ErrInvalidBuyingMode
 }
 
 func NewProduct(
@@ -182,24 +182,24 @@ func NewExistantProduct(
 
 func (prod *Product) validate(exists bool) error {
 	if len(prod.CategoryId) > 0 && len(prod.CategoryId) < 4 {
-		return errInvalidCategoryId
+		return ErrInvalidCategoryId
 	}
 
 	if prod.Price == 0 {
-		return errNilPrice
+		return ErrNilPrice
 	}
 	if exists {
 		return nil
 	}
 
 	if prod.Title == "" {
-		return errNilProductTitle
+		return ErrNilProductTitle
 	}
 	if len(prod.CategoryId) < 4 {
-		return errNilCategoryId
+		return ErrNilCategoryId
 	}
 	if prod.AvailableQuantity == nil {
-		return errNilStock
+		return ErrNilStock
 	}
 	if err := prod.Condition.validate(); err != nil {
 		return err
@@ -211,7 +211,7 @@ func (prod *Product) validate(exists bool) error {
 		return err
 	}
 	if prod.Pictures == nil {
-		return errNilPictures
+		return ErrNilPictures
 	}
 	return nil
 }
@@ -276,7 +276,7 @@ func (ml *MeLi) FetchProducts() ([]*Product, error) {
 
 func (ml *MeLi) GetProducts(ids []ProductId) ([]*Product, error) {
 	if len(ids) > 20 {
-		return nil, errInvalidMultigetQuantity
+		return nil, ErrInvalidMultigetQuantity
 	}
 	params, err := ml.paramsWithToken()
 	if err != nil {
@@ -394,7 +394,7 @@ func (prod *Product) Close() {
 
 func (ml *MeLi) SetProduct(prod *Product) (newProd *Product, err error) {
 	if prod == nil {
-		return nil, errNilProduct
+		return nil, ErrNilProduct
 	}
 	if prod.Id == "" {
 		newProd, err = ml.createProduct(prod)
@@ -486,7 +486,7 @@ func (p *Product) AddVariant(v *Variant) error {
 		return err
 	}
 	if !p.varIsCompatible(v) {
-		return errIncompatibleVar
+		return ErrIncompatibleVar
 	}
 	p.Variants = append(p.Variants, v)
 	return nil

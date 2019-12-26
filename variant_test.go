@@ -42,7 +42,7 @@ func TestMeLi_GetVariant(t *testing.T) {
 		},
 		{
 			name:    "NIL given PROD id",
-			wantErr: errNilProductId,
+			wantErr: ErrNilProductId,
 			args:    args{prodId: "", varId: gVariants.Foo.None.Id},
 		},
 	}

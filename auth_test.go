@@ -20,27 +20,27 @@ func TestMeLi_RefreshToken(t *testing.T) {
 	}{
 		{
 			name:    "but NIL CREDS",
-			wantErr: errNilCredentials,
+			wantErr: ErrNilCredentials,
 		},
 		{
 			name:    "but NO APP Id",
 			creds:   &creds{Access: "foo", Refresh: "bar", Secret: "baz"},
-			wantErr: errNilApplicationId,
+			wantErr: ErrNilApplicationId,
 		},
 		{
 			name:    "but NO SECRET",
 			creds:   &creds{Access: "foo", Refresh: "bar", ApplicationId: "baz"},
-			wantErr: errNilSecret,
+			wantErr: ErrNilSecret,
 		},
 		{
 			name:    "but NO ACCESS",
 			creds:   &creds{Refresh: "bar", ApplicationId: "baz", Secret: "foo"},
-			wantErr: errNilAccessToken,
+			wantErr: ErrNilAccessToken,
 		},
 		{
 			name:    "but NO REFRESH",
 			creds:   &creds{Access: "bar", ApplicationId: "baz", Secret: "foo"},
-			wantErr: errNilRefreshToken,
+			wantErr: ErrNilRefreshToken,
 		},
 		{
 			name:    "REMOTE returns an ERR",
@@ -62,7 +62,7 @@ func TestMeLi_RefreshToken(t *testing.T) {
 		{
 			name:    "REMOTE returns an INCONSISTENCY",
 			creds:   &creds{Access: "bar", ApplicationId: "baz", Secret: "foo", Refresh: "asd"},
-			wantErr: errRemoteInconsistency,
+			wantErr: ErrRemoteInconsistency,
 			stub: &httpstub.Stub{Status: 200,
 				URL:  "/oauth/token",
 				Body: svErrFooBar,

@@ -18,23 +18,23 @@ func (c *creds) validateClient() error {
 		return err
 	}
 	if c.Refresh == "" {
-		return errNilRefreshToken
+		return ErrNilRefreshToken
 	}
 	if c.Access == "" {
-		return errNilAccessToken
+		return ErrNilAccessToken
 	}
 	return nil
 }
 
 func (c *creds) validateServer() error {
 	if c == nil {
-		return errNilCredentials
+		return ErrNilCredentials
 	}
 	if c.ApplicationId == "" {
-		return errNilApplicationId
+		return ErrNilApplicationId
 	}
 	if c.Secret == "" {
-		return errNilSecret
+		return ErrNilSecret
 	}
 	return nil
 }

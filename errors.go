@@ -8,39 +8,39 @@ import (
 )
 
 var (
-	errNilCredentials   = errors.New("the CREDENTIALS are NIL")
-	errNilApplicationId = errors.New("the APPLICATION ID is NIL")
-	errNilAccessToken   = errors.New("the ACCESS TOKEN is NIL")
-	errNilRefreshToken  = errors.New("the REFRESH TOKEN is NIL")
-	errNilSecret        = errors.New("the SECRET is NIL")
+	ErrNilCredentials   = errors.New("the CREDENTIALS are NIL")
+	ErrNilApplicationId = errors.New("the APPLICATION ID is NIL")
+	ErrNilAccessToken   = errors.New("the ACCESS TOKEN is NIL")
+	ErrNilRefreshToken  = errors.New("the REFRESH TOKEN is NIL")
+	ErrNilSecret        = errors.New("the SECRET is NIL")
 
-	errNilProductId    = errors.New("the given PRODUCT ID is NIL")
-	errNilProduct      = errors.New("the given PRODUCT TITLE is NIL")
-	errNilPictures     = errors.New("the given PRODUCT PICTURES are NIL")
-	errNilStock        = errors.New("the given PRODUCT STOCK is NIL")
-	errNilPrice        = errors.New("the given PRODUCT PRICE is NIL")
-	errNilProductTitle = errors.New("the given PRODUCT is NIL")
-	errNilVariant      = errors.New("the given VARIANT is NIL")
-	errVariantNotFound = errors.New("the given VARIANT does NOT EXISTS")
-	// errNilCategory     = errors.New("the given CATEGORY is NIL")
-	errInvalidListingTypeId = errors.New("the given LISTING TYPE ID is INVALID")
+	ErrNilProductId         = errors.New("the given PRODUCT ID is NIL")
+	ErrNilProduct           = errors.New("the given PRODUCT TITLE is NIL")
+	ErrNilPictures          = errors.New("the given PRODUCT PICTURES are NIL")
+	ErrNilStock             = errors.New("the given PRODUCT STOCK is NIL")
+	ErrNilPrice             = errors.New("the given PRODUCT PRICE is NIL")
+	ErrNilProductTitle      = errors.New("the given PRODUCT is NIL")
+	ErrNilVariant           = errors.New("the given VARIANT is NIL")
+	ErrVariantNotFound      = errors.New("the given VARIANT does NOT EXISTS")
+	ErrNilCategory          = errors.New("the given CATEGORY is NIL")
+	ErrInvalidListingTypeId = errors.New("the given LISTING TYPE ID is INVALID")
 
-	errInvalidCategoryId = errors.New("the given CATEGORY ID is INVALID")
-	errNilCategoryId     = errors.New("the given CATEGORY ID is NIL")
-	errNilCombinations   = errors.New("the given ATTR COMBINATIONS are NIL")
+	ErrInvalidCategoryId = errors.New("the given CATEGORY ID is INVALID")
+	ErrNilCategoryId     = errors.New("the given CATEGORY ID is NIL")
+	ErrNilCombinations   = errors.New("the given ATTR COMBINATIONS are NIL")
 
-	errInvalidBuyingMode = errors.New("the BUYING MODE is invalid")
-	errInvalidCondition  = errors.New("the CONDITION is invalid")
+	ErrInvalidBuyingMode = errors.New("the BUYING MODE is invalid")
+	ErrInvalidCondition  = errors.New("the CONDITION is invalid")
 
-	errNilVarStock    = errors.New("the VARIANT wanted to be created has NIL STOCK")
-	errNilVarPrice    = errors.New("the VARIANT wanted to be created has NIL PRICE")
-	errNilVarPictures = errors.New("the VARIANT wanted to be created has NIL PICTURES")
+	ErrNilVarStock    = errors.New("the VARIANT wanted to be created has NIL STOCK")
+	ErrNilVarPrice    = errors.New("the VARIANT wanted to be created has NIL PRICE")
+	ErrNilVarPictures = errors.New("the VARIANT wanted to be created has NIL PICTURES")
 
-	errIncompatibleVar = errors.New("the given VARIANT is INCOMPATIBLE")
+	ErrIncompatibleVar = errors.New("the given VARIANT is INCOMPATIBLE")
 
-	errRemoteInconsistency = errors.New("the SERVER had an inconsistency while performing a request (status code != real behaviour)")
+	ErrRemoteInconsistency = errors.New("the SERVER had an inconsistency while performing a request (status code != real behaviour)")
 
-	errInvalidMultigetQuantity = errors.New("invalid quantity of elements for multiget request type")
+	ErrInvalidMultigetQuantity = errors.New("invalid quantity of elements for multiget request type")
 )
 
 type Error struct {
@@ -75,7 +75,7 @@ func errFromReader(stream io.Reader) error {
 	}
 	if body.ResponseErr == "" && body.Message == "" {
 		body.ResponseErr = "remote_inconsistency"
-		body.Message = errRemoteInconsistency.Error()
+		body.Message = ErrRemoteInconsistency.Error()
 	}
 	return body
 }

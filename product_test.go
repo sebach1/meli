@@ -76,18 +76,18 @@ func TestMeLi_SetProduct(t *testing.T) {
 	}{
 		{
 			name:    "but given NIL PRODUCT",
-			wantErr: errNilProduct,
+			wantErr: ErrNilProduct,
 			creds:   &creds{Access: "baz"},
 		},
 		{
 			name:    "but given NIL CREDENTIALS",
-			wantErr: errNilAccessToken,
+			wantErr: ErrNilAccessToken,
 			prod:    gProducts.Foo.None,
 			creds:   &creds{},
 		},
 		{
 			name:    "but given NIL CREDENTIALS",
-			wantErr: errNilAccessToken,
+			wantErr: ErrNilAccessToken,
 			prod:    gProducts.Foo.None.copy(t),
 			creds:   &creds{},
 		},
@@ -182,26 +182,28 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		name    string
 		creds   *creds
 		prod    *Product
-		stub    *httpstub.Stub
+		stubs   []*httpstub.Stub
 		wantErr error
 	}{
 		{
 			name:    "but given NIL CREDENTIALS",
-			wantErr: errNilAccessToken,
+			wantErr: ErrNilAccessToken,
 			prod:    gProducts.Foo.None.copy(t),
 			creds:   &creds{},
 		},
 		{
 			name: "while EDITing product REMOTE returns CORRECTly",
 			prod: gProducts.Foo.None.copy(t),
-			stub: &httpstub.Stub{Status: 200,
-				Receive: httpstub.Receive{
-					Body: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route,
-					Params: url.Values{
-						"access_token": []string{"baz"},
+			stubs: []*httpstub.Stub{
+				{Status: 200,
+					Receive: httpstub.Receive{
+						Body: JSONMarshal(t, &Product{Deleted: true}), // The body sent lacks of id since its in the route,
+						Params: url.Values{
+							"access_token": []string{"baz"},
+						},
 					},
+					Body: gProducts.Foo.None,
 				},
-				Body: gProducts.Foo.None,
 			},
 			creds: &creds{Access: "baz"},
 		},
@@ -209,14 +211,16 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 			name:    "while EDITing product, REMOTE returns an ERROR",
 			prod:    gProducts.Foo.None.copy(t),
 			wantErr: svErrFooBar,
-			stub: &httpstub.Stub{Status: 400,
-				Receive: httpstub.Receive{
-					Body: JSONMarshal(t, &Product{Deleted: true}),
-					Params: url.Values{
-						"access_token": []string{"baz"},
+			stubs: []*httpstub.Stub{
+				{Status: 400,
+					Receive: httpstub.Receive{
+						Body: JSONMarshal(t, &Product{Deleted: true}),
+						Params: url.Values{
+							"access_token": []string{"baz"},
+						},
 					},
+					Body: svErrFooBar,
 				},
-				Body: svErrFooBar,
 			},
 			creds: &creds{Access: "baz"},
 		},
@@ -226,7 +230,7 @@ func TestMeLi_DeleteProduct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ml := &MeLi{creds: tt.creds}
-			stubber := httpstub.Stubber{Stubs: []*httpstub.Stub{tt.stubs...}, Client: ml}
+			stubber := httpstub.Stubber{Stubs: tt.stubs, Client: ml}
 			cleanup := stubber.Serve(t)
 			defer cleanup()
 
@@ -352,37 +356,37 @@ func TestProduct_AddVariant(t *testing.T) {
 		{
 			name:    "given var has NO COMBINATIONS",
 			prod:    gProducts.Foo.None.copy(t),
-			wantErr: errNilCombinations,
+			wantErr: ErrNilCombinations,
 			v:       gVariants.Bar.AttributeCombinations.Zero.copy(t),
 		},
 		{
 			name:    "given VAR IS ALREADY in prod",
 			prod:    gProducts.Bar.None.copy(t),
-			wantErr: errIncompatibleVar,
+			wantErr: ErrIncompatibleVar,
 			v:       gVariants.Bar.None.copy(t),
 		},
 		{
 			name:    "given var is INCOMPATIBLE due repeated attr combinations",
 			prod:    gProducts.Foo.None.copy(t),
-			wantErr: errIncompatibleVar,
+			wantErr: ErrIncompatibleVar,
 			v:       gVariants.Bar.AttributeCombinations.Alt.copy(t),
 		},
 		{
 			name:    "given var has NIL PRICE",
 			prod:    gProducts.Foo.None.copy(t),
-			wantErr: errNilVarPrice,
+			wantErr: ErrNilVarPrice,
 			v:       gVariants.Bar.Price.Zero.copy(t),
 		},
 		{
 			name:    "given var has NIL STOCK",
 			prod:    gProducts.Foo.None.copy(t),
-			wantErr: errNilVarStock,
+			wantErr: ErrNilVarStock,
 			v:       gVariants.Bar.AvailableQuantity.Zero.copy(t),
 		},
 		{
 			name:    "given var has NIL PICS",
 			prod:    gProducts.Foo.None.copy(t),
-			wantErr: errNilVarPictures,
+			wantErr: ErrNilVarPictures,
 			v:       gVariants.Bar.PictureIds.Zero.copy(t),
 		},
 		{

@@ -22,7 +22,7 @@ func TestMeLi_CategoryAttributes(t *testing.T) {
 	}{
 		{
 			name:    "NIL cat ID",
-			wantErr: errNilCategoryId,
+			wantErr: ErrNilCategoryId,
 			args:    args{catId: ""},
 		},
 		{
@@ -85,7 +85,7 @@ func TestMeLi_CategoryVariableAttributes(t *testing.T) {
 	}{
 		{
 			name:    "NIL cat ID",
-			wantErr: errNilCategoryId,
+			wantErr: ErrNilCategoryId,
 			args:    args{catId: ""},
 		},
 		{

@@ -17,7 +17,7 @@ type CategoryId string
 
 func (ml *MeLi) CategoryAttributes(catId CategoryId) ([]*Attribute, error) {
 	if catId == "" {
-		return nil, errNilCategoryId
+		return nil, ErrNilCategoryId
 	}
 	URL, err := ml.RouteTo("/categories/%v/attributes", nil, catId)
 	if err != nil {

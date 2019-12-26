@@ -30,7 +30,7 @@ type AttributeCombination struct {
 
 func (ml *MeLi) GetVariant(varId VariantId, prodId ProductId) (*Variant, error) {
 	if prodId == "" {
-		return nil, errNilProductId
+		return nil, ErrNilProductId
 	}
 	URL, err := ml.RouteTo("/items/%v/variations/%v", nil, prodId, varId)
 	if err != nil {
@@ -54,10 +54,10 @@ func (ml *MeLi) GetVariant(varId VariantId, prodId ProductId) (*Variant, error) 
 
 func (ml *MeLi) SetVariant(v *Variant, prodId ProductId) (newVar *Variant, err error) {
 	if prodId == "" {
-		return nil, errNilProductId
+		return nil, ErrNilProductId
 	}
 	if v == nil {
-		return nil, errNilVariant
+		return nil, ErrNilVariant
 	}
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (ml *MeLi) DeleteVariant(varId VariantId, prodId ProductId) (*Variant, erro
 	}
 	v := prod.removeVariant(varId)
 	if v == nil {
-		return nil, errVariantNotFound
+		return nil, ErrVariantNotFound
 	}
 	_, err = ml.SetProduct(prod)
 	if err != nil {
@@ -127,16 +127,16 @@ func NewExistantVariant(
 
 func (v *Variant) validate() error {
 	if v.Price == 0 {
-		return errNilVarPrice
+		return ErrNilVarPrice
 	}
 	if v.AvailableQuantity == nil {
-		return errNilVarStock
+		return ErrNilVarStock
 	}
 	if len(v.AttributeCombinations) == 0 {
-		return errNilCombinations
+		return ErrNilCombinations
 	}
 	if len(v.PictureIds) == 0 {
-		return errNilVarPictures
+		return ErrNilVarPictures
 	}
 	return nil
 }
