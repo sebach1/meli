@@ -12,21 +12,13 @@ type Variant struct {
 	AvailableQuantity *int `json:"available_quantity,omitempty"`
 	SoldQuantity      int  `json:"sold_quantity,omitempty"`
 
-	Attributes            []*Attribute            `json:"attributes,omitempty"`
-	AttributeCombinations []*AttributeCombination `json:"attribute_combinations,omitempty"`
-	SaleTerms             []*SaleTerm             `json:"sale_terms,omitempty"`
-	PictureIds            []string                `json:"picture_ids,omitempty"`
-	CatalogProductId      interface{}             `json:"catalog_product_id,omitempty"`
+	AttributeCombinations []*Attribute `json:"attribute_combinations,omitempty"`
+	SaleTerms             []*SaleTerm  `json:"sale_terms,omitempty"`
+	PictureIds            []string     `json:"picture_ids,omitempty"`
+	CatalogProductId      interface{}  `json:"catalog_product_id,omitempty"`
 }
 
 type VariantId int
-
-type AttributeCombination struct {
-	Id        string `json:"id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	ValueName string `json:"value_name,omitempty"`
-	ValueId   string `json:"value_id,omitempty"`
-}
 
 func (ml *MeLi) GetVariant(varId VariantId, prodId ProductId) (*Variant, error) {
 	if prodId == "" {
@@ -102,7 +94,7 @@ func (v *Variant) ManageStock(stock int) {
 }
 
 func NewVariant(
-	attrs []*AttributeCombination,
+	attrs []*Attribute,
 	price float64,
 	stock *int,
 	picIds []string,
@@ -116,7 +108,7 @@ func NewVariant(
 }
 
 func NewExistantVariant(
-	attrs []*AttributeCombination,
+	attrs []*Attribute,
 	price float64,
 	stock *int,
 	picIds []string,
@@ -213,7 +205,7 @@ func (v *Variant) isCompatible(otherV *Variant) bool {
 	return true
 }
 
-func (attC *AttributeCombination) equals(otherC *AttributeCombination) bool {
+func (attC *Attribute) equals(otherC *Attribute) bool {
 	if attC.Id != otherC.Id {
 		return false
 	}

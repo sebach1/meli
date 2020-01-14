@@ -36,7 +36,7 @@ type variadicVariants struct {
 	Id                    *optVariants `json:"id,omitempty"`
 	Price                 *optVariants `json:"price,omitempty"`
 	AvailableQuantity     *optVariants `json:"available_quantity,omitempty"`
-	AttributeCombinations *optVariants `json:"attribute_combinations,omitempty"`
+	Attributes *optVariants `json:"attribute_combinations,omitempty"`
 	PictureIds            *optVariants `json:"picture_ids,omitempty"`
 }
 

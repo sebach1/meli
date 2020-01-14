@@ -220,7 +220,7 @@ func (prod *Product) site() SiteId {
 	if len(prod.CategoryId) < 3 {
 		return ""
 	}
-	return SiteId(prod.CategoryId[0:2])
+	return SiteId(prod.CategoryId[0:3])
 }
 
 type ProductEdge struct {

@@ -312,7 +312,7 @@ func TestProduct_RemoveCombination(t *testing.T) {
 	tests := []struct {
 		name     string
 		prod     *Product
-		newCombs []*AttributeCombination
+		newCombs []*Attribute
 		args     args
 	}{
 		{
@@ -357,7 +357,7 @@ func TestProduct_AddVariant(t *testing.T) {
 			name:    "given var has NO COMBINATIONS",
 			prod:    gProducts.Foo.None.copy(t),
 			wantErr: ErrNilCombinations,
-			v:       gVariants.Bar.AttributeCombinations.Zero.copy(t),
+			v:       gVariants.Bar.Attributes.Zero.copy(t),
 		},
 		{
 			name:    "given VAR IS ALREADY in prod",
@@ -369,7 +369,7 @@ func TestProduct_AddVariant(t *testing.T) {
 			name:    "given var is INCOMPATIBLE due repeated attr combinations",
 			prod:    gProducts.Foo.None.copy(t),
 			wantErr: ErrIncompatibleVar,
-			v:       gVariants.Bar.AttributeCombinations.Alt.copy(t),
+			v:       gVariants.Bar.Attributes.Alt.copy(t),
 		},
 		{
 			name:    "given var has NIL PRICE",
@@ -513,7 +513,7 @@ func (p *Product) appendVariantAndReturn(v *Variant) *Product {
 	return p
 }
 
-func rmValueAndReturn(combs []*AttributeCombination) []*AttributeCombination {
+func rmValueAndReturn(combs []*Attribute) []*Attribute {
 	for _, attC := range combs {
 		attC.ValueId = ""
 		attC.ValueName = ""
